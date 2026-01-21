@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reporte Estadístico - Municipalidad de Cabildo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <style>
+    /* ... Tus estilos CSS (Copialos del archivo anterior) ... */
+    :root { --muni-azul: #003366; --muni-azul-dark: #002244; --muni-dorado: #c5a059; --bg-gris: #f4f6f9; --sidebar-width: 260px; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-gris); overflow-x: hidden; }
+    .sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: var(--sidebar-width); background: linear-gradient(180deg, var(--muni-azul) 0%, var(--muni-azul-dark) 100%); color: white; transition: all 0.3s; z-index: 1000; box-shadow: 4px 0 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+    .sidebar-header { padding: 20px; text-align: center; background-color: white; border-bottom: 1px solid rgba(0,0,0,0.1); }
+    .logo-img { max-height: 80px; width: auto; }
+    .sidebar-menu { padding: 15px 10px; flex-grow: 1; }
+    .menu-item { margin-bottom: 8px; }
+    .menu-item a, .btn-logout-menu { color: rgba(255,255,255,0.9); text-decoration: none; display: flex; align-items: center; padding: 12px 15px; border-radius: 8px; transition: all 0.2s; font-weight: 500; font-size: 0.95rem; width: 100%; border: none; background: none; text-align: left; cursor: pointer; }
+    .menu-item a:hover, .btn-logout-menu:hover { background-color: rgba(255,255,255,0.1); color: white; transform: translateX(5px); }
+    .menu-item a.active { background-color: var(--muni-dorado); color: var(--muni-azul-dark); font-weight: 700; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+    .menu-item i, .btn-logout-menu i { width: 25px; text-align: center; margin-right: 10px; }
+    .menu-separator { border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 10px; }
+    .main-content { margin-left: var(--sidebar-width); padding: 30px; transition: all 0.3s; min-height: 100vh; }
+    .header-section { background: linear-gradient(135deg, var(--muni-azul) 0%, #004080 100%); color: white; padding: 25px 30px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 8px 20px rgba(0, 51, 102, 0.2); display: flex; justify-content: space-between; align-items: center; }
+    .kpi-card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); height: 100%; border-bottom: 4px solid transparent; transition: transform 0.3s; position: relative; overflow: hidden; }
+    .kpi-card:hover { transform: translateY(-5px); }
+    .kpi-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 15px; }
+    .kpi-value { font-size: 2.2rem; font-weight: 800; color: var(--muni-azul-dark); line-height: 1; margin-bottom: 5px; }
+    .kpi-label { color: #6c757d; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .kpi-blue { border-color: var(--muni-azul); } .kpi-blue .kpi-icon { background-color: #e3f2fd; color: var(--muni-azul); }
+    .kpi-green { border-color: #198754; } .kpi-green .kpi-icon { background-color: #d1e7dd; color: #198754; }
+    .kpi-yellow { border-color: var(--muni-dorado); } .kpi-yellow .kpi-icon { background-color: #fdf3d8; color: #9c7f00; }
+    .kpi-info { border-color: #0dcaf0; } .kpi-info .kpi-icon { background-color: #cff4fc; color: #055160; }
+    .content-card { background: white; border-radius: 12px; padding: 0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; overflow: hidden; height: 100%; border: 1px solid rgba(0,0,0,0.05); }
+    .card-header-custom { padding: 20px 25px; border-bottom: 1px solid #eee; background-color: #fff; }
+    .card-title { font-size: 1.1rem; font-weight: 700; color: var(--muni-azul-dark); margin: 0; }
+    .card-body-custom { padding: 25px; }
+    .table-custom thead th { background-color: #f8f9fa; color: #555; font-weight: 600; border-bottom: 2px solid #e9ecef; padding: 15px 20px; font-size: 0.85rem; text-transform: uppercase; }
+    .table-custom tbody td { padding: 15px 20px; vertical-align: middle; border-bottom: 1px solid #f0f0f0; color: #444; font-weight: 500; }
+    .progress-thin { height: 10px; border-radius: 5px; background-color: #e9ecef; margin-bottom: 0; overflow: hidden; }
+    @media (max-width: 992px) { .sidebar { left: -260px; } .sidebar.active { left: 0; } .main-content { margin-left: 0; padding: 20px; } .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 900; } .overlay.active { display: block; } }
+    [data-bs-theme="dark"] { --bg-gris: #212529; }
+    [data-bs-theme="dark"] .sidebar-header { background-color: transparent !important; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    [data-bs-theme="dark"] .logo-img { filter: none; }
+    [data-bs-theme="dark"] .kpi-card, [data-bs-theme="dark"] .content-card, [data-bs-theme="dark"] .header-section { background-color: #343a40 !important; color: #e0e0e0; border-color: #495057; }
+    [data-bs-theme="dark"] .card-header-custom { background-color: #343a40 !important; border-bottom-color: #495057; }
+    [data-bs-theme="dark"] .card-title { color: #e0e0e0; }
+    [data-bs-theme="dark"] .text-dark { color: #e0e0e0 !important; }
+    [data-bs-theme="dark"] .text-muted { color: #adb5bd !important; }
+    [data-bs-theme="dark"] .text-secondary { color: #adb5bd !important; }
+    [data-bs-theme="dark"] .kpi-value { color: #e0e0e0; }
+    [data-bs-theme="dark"] .kpi-label { color: #adb5bd; }
+    [data-bs-theme="dark"] .kpi-blue .kpi-icon { background-color: rgba(13, 110, 253, 0.2); color: #6ea8fe; }
+    [data-bs-theme="dark"] .kpi-green .kpi-icon { background-color: rgba(25, 135, 84, 0.2); color: #75b798; }
+    [data-bs-theme="dark"] .kpi-yellow .kpi-icon { background-color: rgba(255, 193, 7, 0.2); color: #ffda6a; }
+    [data-bs-theme="dark"] .kpi-info .kpi-icon { background-color: rgba(13, 202, 240, 0.2); color: #6edff6; }
+    [data-bs-theme="dark"] .table-custom thead th { background-color: #2c3034; color: #e0e0e0; border-bottom-color: #495057; }
+    [data-bs-theme="dark"] .table-custom tbody td { color: #cfd2d6; border-bottom-color: #495057; }
+    [data-bs-theme="dark"] .progress-thin { background-color: #495057; }
+  </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <img th:src="@{/img/logo-cabildo.png}" alt="Logo Cabildo" class="logo-img">
+  </div>
+
+  <div class="sidebar-menu">
+    <div class="menu-item"><a th:href="@{/soporte/dashboard}"><i class="fas fa-home"></i> <span>Panel Principal</span></a></div>
+    <div class="menu-item"><a th:href="@{/soporte/mis-tickets}"><i class="fas fa-tasks"></i> <span>Mis Tickets</span></a></div>
+    <div class="menu-item"><a th:href="@{/soporte/tickets-disponibles}"><i class="fas fa-inbox"></i> <span>Bolsa de Tickets</span></a></div>
+    <div class="menu-item"><a th:href="@{/soporte/estadisticas}" class="active"><i class="fas fa-chart-line"></i> <span>Estadísticas</span></a></div>
+    <div class="menu-item"><a th:href="@{/soporte/historial}"><i class="fas fa-history"></i> <span>Historial</span></a></div>
+    <div class="menu-item"><a th:href="@{/soporte/perfil}"><i class="fas fa-user-cog"></i> <span>Mi Perfil</span></a></div>
+    <div class="menu-item"><button type="button" class="btn-logout-menu text-warning" onclick="toggleTema()"><i class="fas fa-moon" id="themeIcon"></i> <span>Tema</span></button></div>
+    <div class="menu-separator"></div>
+    <div class="menu-item"><form th:action="@{/logout}" method="post"><button class="btn-logout-menu"><i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span></button></form></div>
+  </div>
+</div>
+
+<div class="main-content">
+  <div class="d-flex align-items-center mb-4 d-lg-none">
+    <button class="btn btn-outline-secondary me-3" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+    <h4 class="m-0 fw-bold text-dark">Estadísticas</h4>
+  </div>
+
+  <div class="header-section">
+    <div>
+      <h2 class="mb-1 fw-bold">Reporte de Rendimiento</h2>
+      <p class="mb-0 opacity-75">Métricas de desempeño del área de soporte técnico</p>
+    </div>
+    <div class="d-none d-md-block text-white opacity-50">
+      <i class="fas fa-chart-pie fa-3x"></i>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-md-3 col-sm-6">
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-icon"><i class="fas fa-clipboard-list"></i></div>
+        <div class="kpi-value" th:text="${total}">0</div>
+        <div class="kpi-label">Total Tickets</div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="kpi-card kpi-green">
+        <div class="kpi-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="kpi-value text-success" th:text="${resueltos}">0</div>
+        <div class="kpi-label">Resueltos</div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="kpi-card kpi-yellow">
+        <div class="kpi-icon"><i class="fas fa-spinner"></i></div>
+        <div class="kpi-value text-warning" th:text="${enProceso}">0</div>
+        <div class="kpi-label">En Proceso</div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="kpi-card kpi-info">
+        <div class="kpi-icon"><i class="fas fa-percentage"></i></div>
+        <div class="kpi-value text-info" th:text="${porcentajeExito} + '%'">0%</div>
+        <div class="kpi-label">Eficacia</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-6 mb-4">
+      <div class="content-card">
+        <div class="card-header-custom">
+          <h5 class="card-title"><i class="fas fa-layer-group me-2 text-secondary"></i>Distribución por Prioridad</h5>
+        </div>
+        <div class="card-body-custom">
+
+          <div class="mb-4">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="fw-bold text-danger">Alta Prioridad</span>
+              <span class="badge bg-danger rounded-pill" th:text="${alta ?: 0}">0</span>
+            </div>
+            <div class="progress progress-thin">
+              <div class="progress-bar bg-danger" role="progressbar"
+                   th:style="'width: ' + (${total} > 0 ? ((${alta} ?: 0) * 100 / ${total}) : 0) + '%'">
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="fw-bold text-warning">Media Prioridad</span>
+              <span class="badge bg-warning text-dark rounded-pill" th:text="${media ?: 0}">0</span>
+            </div>
+            <div class="progress progress-thin">
+              <div class="progress-bar bg-warning" role="progressbar"
+                   th:style="'width: ' + (${total} > 0 ? ((${media} ?: 0) * 100 / ${total}) : 0) + '%'">
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-2">
+            <div class="d-flex justify-content-between mb-2">
+              <span class="fw-bold text-info">Baja Prioridad</span>
+              <span class="badge bg-info text-dark rounded-pill" th:text="${baja ?: 0}">0</span>
+            </div>
+            <div class="progress progress-thin">
+              <div class="progress-bar bg-info" role="progressbar"
+                   th:style="'width: ' + (${total} > 0 ? ((${baja} ?: 0) * 100 / ${total}) : 0) + '%'">
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+      <div class="content-card">
+        <div class="card-header-custom">
+          <h5 class="card-title"><i class="fas fa-tags me-2 text-secondary"></i>Desglose por Categoría</h5>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-custom mb-0">
+            <thead>
+            <tr>
+              <th>Categoría</th>
+              <th class="text-center">Total</th>
+              <th>% Distribución</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+              <td><i class="fas fa-microchip me-2 text-muted"></i> Hardware</td>
+              <td class="fw-bold text-center" th:text="${hardware ?: 0}">0</td>
+              <td style="width: 40%; vertical-align: middle;">
+                <div class="progress progress-thin">
+                  <div class="progress-bar" style="background-color: var(--muni-azul);"
+                       th:style="'width: ' + (${total} > 0 ? ((${hardware} ?: 0) * 100 / ${total}) : 0) + '%'"></div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><i class="fas fa-laptop-code me-2 text-muted"></i> Software</td>
+              <td class="fw-bold text-center" th:text="${software ?: 0}">0</td>
+              <td>
+                <div class="progress progress-thin">
+                  <div class="progress-bar bg-success"
+                       th:style="'width: ' + (${total} > 0 ? ((${software} ?: 0) * 100 / ${total}) : 0) + '%'"></div>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><i class="fas fa-network-wired me-2 text-muted"></i> Redes</td>
+              <td class="fw-bold text-center" th:text="${redes ?: 0}">0</td>
+              <td>
+                <div class="progress progress-thin">
+                  <div class="progress-bar bg-info"
+                       th:style="'width: ' + (${total} > 0 ? ((${redes} ?: 0) * 100 / ${total}) : 0) + '%'"></div>
+                </div>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/control-sesion.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const toggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+
+    if(toggle && sidebar && overlay) {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+      });
+      overlay.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+      });
+    }
+  });
+
+  function toggleTema() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-bs-theme');
+    const icon = document.getElementById('themeIcon');
+
+    if (currentTheme === 'dark') {
+      html.setAttribute('data-bs-theme', 'light');
+      if(icon) icon.className = 'fas fa-moon';
+      localStorage.setItem('theme', 'light');
+    } else {
+      html.setAttribute('data-bs-theme', 'dark');
+      if(icon) icon.className = 'fas fa-sun';
+      localStorage.setItem('theme', 'dark');
+    }
+  }
+
+  (function() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-bs-theme', savedTheme);
+    document.addEventListener('DOMContentLoaded', () => {
+      const icon = document.getElementById('themeIcon');
+      if (icon && savedTheme === 'dark') {
+        icon.className = 'fas fa-sun';
+      }
+    });
+  })();
+</script>
+</body>
+</html>

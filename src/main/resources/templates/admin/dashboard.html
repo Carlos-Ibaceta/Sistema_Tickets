@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administración - Municipalidad de Cabildo</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        :root {
+            --muni-azul: #003366;       /* Azul Institucional */
+            --muni-azul-dark: #002244;
+            --muni-dorado: #c5a059;     /* Acento */
+            --bg-gris: #f4f6f9;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-gris);
+            overflow-x: hidden;
+        }
+
+        /* --- SIDEBAR MUNICIPAL --- */
+        .sidebar {
+            position: fixed; top: 0; left: 0; height: 100vh; width: var(--sidebar-width);
+            background: linear-gradient(180deg, var(--muni-azul) 0%, var(--muni-azul-dark) 100%);
+            color: white; transition: all 0.3s; z-index: 1000;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-header {
+            padding: 20px; text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            background-color: white; /* Fondo blanco para que destaque el logo */
+        }
+
+        .logo-img {
+            max-height: 80px; width: auto;
+        }
+
+        .sidebar-menu { padding: 15px 10px; }
+
+        .menu-item { margin-bottom: 8px; }
+
+        .menu-item a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none; display: flex; align-items: center;
+            padding: 12px 15px; border-radius: 8px; transition: all 0.2s;
+            font-weight: 500; font-size: 0.95rem;
+        }
+
+        .menu-item a:hover {
+            background-color: rgba(255,255,255,0.1); color: white; transform: translateX(5px);
+        }
+
+        .menu-item a.active {
+            background-color: var(--muni-dorado); /* Dorado para resaltar activo */
+            color: var(--muni-azul-dark); font-weight: 700;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .menu-item i { width: 25px; text-align: center; margin-right: 10px; }
+
+        /* --- CONTENIDO PRINCIPAL --- */
+        .main-content {
+            margin-left: var(--sidebar-width); padding: 30px;
+            min-height: 100vh; transition: all 0.3s;
+        }
+
+        /* Navbar Superior */
+        .top-navbar {
+            background-color: white; padding: 15px 30px; border-radius: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 30px;
+            border-left: 5px solid var(--muni-azul);
+        }
+
+        .page-title { font-size: 1.25rem; font-weight: 700; color: var(--muni-azul); margin: 0; }
+
+        .user-profile { display: flex; align-items: center; gap: 15px; }
+        .user-avatar {
+            width: 40px; height: 40px; background-color: var(--muni-azul);
+            color: white; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; font-weight: bold;
+        }
+
+        /* --- TARJETAS KPI --- */
+        .stat-card {
+            background: white; border-radius: 10px; padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: none;
+            height: 100%; transition: transform 0.3s; position: relative; overflow: hidden;
+        }
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-card::after {
+            content: ""; position: absolute; bottom: 0; left: 0;
+            width: 100%; height: 4px; background: var(--muni-azul);
+        }
+
+        .stat-icon {
+            width: 50px; height: 50px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; margin-bottom: 15px;
+        }
+
+        .icon-blue { background-color: #e3f2fd; color: var(--muni-azul); }
+        .icon-gold { background-color: #fff8e1; color: #b78a2e; }
+        .icon-green { background-color: #e8f5e9; color: #2e7d32; }
+        .icon-red { background-color: #ffebee; color: #c62828; }
+
+        .stat-value { font-size: 2.2rem; font-weight: 700; color: #333; line-height: 1; }
+        .stat-label { color: #666; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
+
+        /* --- TABLAS Y PANELES --- */
+        .content-card {
+            background: white; border-radius: 10px; padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 30px;
+        }
+
+        .card-header-custom {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px;
+        }
+        .card-title-custom { font-size: 1.1rem; font-weight: 700; color: var(--muni-azul); }
+
+        .table-custom thead th {
+            background-color: var(--muni-azul); color: white;
+            font-weight: 600; text-transform: uppercase; font-size: 0.8rem;
+            border: none; padding: 12px;
+        }
+        .table-custom tbody td { vertical-align: middle; padding: 12px; border-bottom: 1px solid #f0f0f0; }
+        .table-hover tbody tr:hover { background-color: #f8faff; }
+
+        /* BOTONES DE ACCIÓN RÁPIDA */
+        .action-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+
+        .btn-quick-action {
+            display: flex; align-items: center; padding: 15px;
+            background: white; border: 1px solid #e0e0e0; border-radius: 10px;
+            text-decoration: none; color: #555; transition: all 0.3s;
+        }
+        .btn-quick-action:hover {
+            border-color: var(--muni-azul); background-color: #f0f4ff;
+            transform: translateY(-2px); color: var(--muni-azul);
+        }
+        .btn-quick-action i { font-size: 1.5rem; margin-right: 15px; color: var(--muni-azul); }
+
+        @media (max-width: 992px) {
+            .sidebar { left: -260px; }
+            .sidebar.active { left: 0; }
+            .main-content { margin-left: 0; }
+            .overlay {
+                display: none; position: fixed; top: 0; left: 0;
+                width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 900;
+            }
+            .overlay.active { display: block; }
+        }
+
+        /* --- MODO OSCURO (ADMIN DASHBOARD) --- */
+        [data-bs-theme="dark"] { --bg-gris: #212529; }
+
+        /* 1. FIX LOGO */
+        [data-bs-theme="dark"] .sidebar-header {
+            background-color: transparent !important;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        [data-bs-theme="dark"] .logo-img { filter: none; }
+
+        /* 2. Tarjetas y Paneles */
+        [data-bs-theme="dark"] .top-navbar,
+        [data-bs-theme="dark"] .stat-card,
+        [data-bs-theme="dark"] .content-card,
+        [data-bs-theme="dark"] .btn-quick-action { background-color: #343a40 !important; color: #e0e0e0; border-color: #495057; }
+
+        /* Textos */
+        [data-bs-theme="dark"] .page-title { color: #e0e0e0; }
+        [data-bs-theme="dark"] .text-dark { color: #e0e0e0 !important; }
+        [data-bs-theme="dark"] .text-muted { color: #adb5bd !important; }
+        [data-bs-theme="dark"] .card-title-custom { color: #e0e0e0; }
+
+        /* KPIs */
+        [data-bs-theme="dark"] .stat-value { color: #e0e0e0; }
+        [data-bs-theme="dark"] .stat-label { color: #adb5bd; }
+        [data-bs-theme="dark"] .icon-blue { background-color: rgba(13, 110, 253, 0.2); color: #6ea8fe; }
+        [data-bs-theme="dark"] .icon-gold { background-color: rgba(255, 193, 7, 0.2); color: #ffda6a; }
+        [data-bs-theme="dark"] .icon-green { background-color: rgba(25, 135, 84, 0.2); color: #75b798; }
+        [data-bs-theme="dark"] .icon-red { background-color: rgba(220, 53, 69, 0.2); color: #ea868f; }
+
+        /* Botones Rápidos (Hover Dark) */
+        [data-bs-theme="dark"] .btn-quick-action:hover { background-color: #2c3034; border-color: #6ea8fe; color: #6ea8fe; }
+        [data-bs-theme="dark"] .btn-quick-action i { color: #6ea8fe; }
+
+        /* Tablas */
+        [data-bs-theme="dark"] .card-header-custom { border-bottom-color: #495057; }
+        [data-bs-theme="dark"] .table-custom thead th { background-color: #2c3034; color: #e0e0e0; }
+        [data-bs-theme="dark"] .table-custom tbody td { color: #cfd2d6; border-bottom-color: #495057; }
+        [data-bs-theme="dark"] .table-hover tbody tr:hover { background-color: #3e444a; }
+
+        /* Avatar */
+        [data-bs-theme="dark"] .user-avatar { background-color: #2c3034; color: #e0e0e0; border: 1px solid #495057; }
+    </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <img th:src="@{/img/logo-cabildo.png}" alt="Logo Cabildo" class="logo-img">
+    </div>
+
+    <div class="sidebar-menu">
+        <div class="menu-item">
+            <a th:href="@{/admin/dashboard}" class="active">
+                <i class="fas fa-chart-pie"></i> <span>Panel de Control</span>
+            </a>
+        </div>
+        <div class="menu-item">
+            <a th:href="@{/admin/usuarios}">
+                <i class="fas fa-users-cog"></i> <span>Gestión Usuarios</span>
+            </a>
+        </div>
+        <div class="menu-item">
+            <a th:href="@{/admin/tickets-globales}">
+                <i class="fas fa-list-alt"></i> <span>Tickets Globales</span>
+            </a>
+        </div>
+        <div class="menu-item">
+            <a th:href="@{/reportes}">
+                <i class="fas fa-file-invoice"></i> <span>Reportes PDF</span>
+            </a>
+        </div>
+        <div class="menu-item">
+            <a th:href="@{/admin/configuracion}">
+                <i class="fas fa-sliders-h"></i> <span>Configuración</span>
+            </a>
+        </div>
+        <div class="menu-item">
+            <a th:href="@{/admin/perfil}">
+                <i class="fas fa-user-edit"></i> <span>Mi Perfil</span>
+            </a>
+        </div>
+
+        <div class="menu-item">
+            <button type="button" class="btn w-100 text-start text-white p-0 d-flex align-items-center bg-transparent border-0"
+                    style="padding: 12px 15px !important;" onclick="toggleTema()">
+                <i class="fas fa-moon text-warning" id="themeIcon" style="width: 25px; margin-right: 10px;"></i>
+                <span class="fw-bold" style="font-size: 0.95rem;">Tema</span>
+            </button>
+        </div>
+
+        <hr style="border-color: rgba(255,255,255,0.2);">
+
+        <div class="menu-item">
+            <form th:action="@{/logout}" method="post">
+                <button class="btn w-100 text-start text-white p-0 d-flex align-items-center bg-transparent border-0" style="padding-left: 15px !important;">
+                    <i class="fas fa-sign-out-alt" style="width: 25px; margin-right: 10px;"></i>
+                    <span style="font-weight: 500;">Cerrar Sesión</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="main-content">
+
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show mb-4 shadow-sm" role="alert">
+        <i class="fas fa-check-circle me-2"></i> <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="top-navbar">
+        <div class="d-flex align-items-center">
+            <button class="btn btn-outline-secondary d-lg-none me-3" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h4 class="page-title"><i class="fas fa-building me-2"></i>Administración Municipal</h4>
+        </div>
+        <div class="user-profile">
+            <div class="text-end d-none d-md-block">
+                <div class="fw-bold text-dark" th:text="${usuario.nombre}">Administrador</div>
+                <div class="small text-muted">Informática</div>
+            </div>
+            <div class="user-avatar">
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card">
+                <div class="stat-icon icon-blue"><i class="fas fa-ticket-alt"></i></div>
+                <div class="stat-value" th:text="${totalTickets != null ? totalTickets : 0}">0</div>
+                <div class="stat-label">Total Tickets</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card">
+                <div class="stat-icon icon-gold"><i class="fas fa-spinner"></i></div>
+                <div class="stat-value" th:text="${ticketsEnProceso != null ? ticketsEnProceso : 0}">0</div>
+                <div class="stat-label">En Proceso</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card">
+                <div class="stat-icon icon-green"><i class="fas fa-check-double"></i></div>
+                <div class="stat-value" th:text="${ticketsResueltos != null ? ticketsResueltos : 0}">0</div>
+                <div class="stat-label">Resueltos</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card">
+                <div class="stat-icon icon-red"><i class="fas fa-bell"></i></div>
+                <div class="stat-value" th:text="${ticketsPendientes != null ? ticketsPendientes : 0}">0</div>
+                <div class="stat-label">Pendientes</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-card">
+        <div class="card-header-custom">
+            <h5 class="card-title-custom"><i class="fas fa-bolt me-2"></i>Accesos Directos</h5>
+        </div>
+        <div class="action-grid">
+            <a href="/admin/usuarios" class="btn-quick-action">
+                <i class="fas fa-user-plus"></i>
+                <div>
+                    <div class="fw-bold">Usuarios</div>
+                    <div class="small">Gestionar personal</div>
+                </div>
+            </a>
+            <a href="/admin/tickets-globales" class="btn-quick-action">
+                <i class="fas fa-search"></i>
+                <div>
+                    <div class="fw-bold">Auditoría</div>
+                    <div class="small">Revisar tickets</div>
+                </div>
+            </a>
+            <a href="/reportes" class="btn-quick-action">
+                <i class="fas fa-print"></i>
+                <div>
+                    <div class="fw-bold">Reportes</div>
+                    <div class="small">Estadísticas PDF</div>
+                </div>
+            </a>
+            <a href="/admin/configuracion" class="btn-quick-action">
+                <i class="fas fa-tools"></i>
+                <div>
+                    <div class="fw-bold">Ajustes</div>
+                    <div class="small">Config. del Sistema</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="content-card">
+        <div class="card-header-custom">
+            <h5 class="card-title-custom"><i class="fas fa-clock me-2"></i>Última Actividad</h5>
+            <a href="/admin/tickets-globales" class="btn btn-sm btn-outline-primary rounded-pill px-3">Ver Todo</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-custom table-hover mb-0">
+                <thead>
+                <tr>
+                    <th>Folio</th>
+                    <th>Asunto</th>
+                    <th>Solicitante</th>
+                    <th>Estado</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="t : ${ticketsRecientes}">
+                    <td><span class="badge bg-light text-dark border" th:text="'#' + ${t.id}"></span></td>
+                    <td th:text="${t.asunto}"></td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="bg-light rounded-circle text-secondary d-flex justify-content-center align-items-center me-2" style="width: 25px; height: 25px; font-size: 0.7rem;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span th:text="${t.usuario.nombre}"></span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge rounded-pill"
+                              th:with="estado=${t.estadoTicket.nombre}"
+                              th:classappend="${estado == 'INGRESADO' ? 'bg-danger' : (estado == 'EN_PROCESO' ? 'bg-warning text-dark' : 'bg-success')}"
+                              th:text="${#strings.replace(estado, '_', ' ')}">
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <a th:href="@{/admin/tickets/{id}(id=${t.id})}" class="btn btn-sm btn-outline-primary border-0" title="Ver Detalle">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script src="/js/control-sesion.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        if(toggle) {
+            toggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            });
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+        }
+    });
+
+    // --- MODO OSCURO LOGIC ---
+    function toggleTema() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-bs-theme');
+        const icon = document.getElementById('themeIcon');
+
+        if (currentTheme === 'dark') {
+            html.setAttribute('data-bs-theme', 'light');
+            if(icon) icon.className = 'fas fa-moon text-warning';
+            localStorage.setItem('theme', 'light');
+        } else {
+            html.setAttribute('data-bs-theme', 'dark');
+            if(icon) icon.className = 'fas fa-sun text-warning';
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
+    (function() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        document.addEventListener('DOMContentLoaded', () => {
+            const icon = document.getElementById('themeIcon');
+            if (icon && savedTheme === 'dark') {
+                icon.className = 'fas fa-sun text-warning';
+            }
+        });
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Usuario - Municipalidad de Cabildo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+  <style>
+    :root {
+      --muni-azul: #003366;
+      --muni-azul-claro: #004d99;
+      --muni-gris: #f4f6f9;
+      --muni-dorado: #c5a059;
+    }
+
+    body {
+      background-color: var(--muni-gris);
+      background-image: linear-gradient(135deg, #eef2f3 0%, #8e9eab 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      padding: 20px;
+    }
+
+    .card-form {
+      background: white;
+      padding: 2.5rem;
+      border-radius: 12px;
+      box-shadow: 0 15px 35px rgba(0, 51, 102, 0.15);
+      border-top: 6px solid var(--muni-azul);
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .form-header { text-align: center; margin-bottom: 30px; }
+
+    .header-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 80px;
+      height: 80px;
+      background-color: rgba(0, 51, 102, 0.1);
+      color: var(--muni-azul);
+      border-radius: 50%;
+      margin-bottom: 15px;
+    }
+
+    .form-header h3 { font-weight: 800; color: var(--muni-azul); text-transform: uppercase; font-size: 1.5rem; margin: 0; }
+    .form-label { color: var(--muni-azul); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .form-control, .form-select { border-radius: 6px; border: 1px solid #ced4da; padding: 10px 15px; background-color: #fcfcfc; }
+    .form-control:focus, .form-select:focus { border-color: var(--muni-azul); box-shadow: 0 0 0 0.25rem rgba(0, 51, 102, 0.15); background-color: white; }
+
+    /* Botones */
+    .btn-muni-primary {
+      background-color: var(--muni-azul); color: white; border: none; padding: 12px; font-weight: 700; border-radius: 6px; transition: all 0.3s; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .btn-muni-primary:hover { background-color: var(--muni-azul-claro); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 51, 102, 0.2); color: white; }
+    .btn-muni-primary:disabled { background-color: #e9ecef; color: #adb5bd; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-muni-secondary { background-color: #e9ecef; color: #495057; border: none; padding: 12px; font-weight: 600; border-radius: 6px; transition: all 0.3s; text-decoration: none; display: block; text-align: center; }
+    .btn-muni-secondary:hover { background-color: #dee2e6; color: #212529; }
+
+    /* REGLAS DE PASSWORD */
+    .password-rules { font-size: 0.8rem; color: #6c757d; list-style: none; padding: 0; margin-top: 10px; display: none; }
+    .password-rules li { margin-bottom: 4px; display: flex; align-items: center; }
+    .password-rules li i { width: 15px; margin-right: 5px; }
+    .rule-valid { color: #198754; font-weight: 600; }
+    .rule-invalid { color: #dc3545; }
+
+    /* --- CORRECCIÓN DEL DOBLE OJO --- */
+    /* Esto oculta el ojo nativo de Edge y Chrome */
+    input[type="password"]::-ms-reveal,
+    input[type="password"]::-ms-clear {
+      display: none;
+    }
+
+    /* --- MODO OSCURO --- */
+    [data-bs-theme="dark"] body { background-image: linear-gradient(135deg, #2c3e50 0%, #000000 100%); }
+    [data-bs-theme="dark"] .card-form { background-color: #343a40 !important; color: #e0e0e0; }
+    [data-bs-theme="dark"] .form-header h3 { color: #e0e0e0; }
+    [data-bs-theme="dark"] .form-label { color: #6ea8fe; }
+    [data-bs-theme="dark"] .text-muted { color: #adb5bd !important; }
+    [data-bs-theme="dark"] .form-control, [data-bs-theme="dark"] .form-select { background-color: #2b3035; border-color: #495057; color: #e0e0e0; }
+    [data-bs-theme="dark"] .input-group-text { background-color: #212529; border-color: #495057; color: #adb5bd; }
+    [data-bs-theme="dark"] .header-icon { background-color: rgba(13, 110, 253, 0.2); color: #6ea8fe; }
+    [data-bs-theme="dark"] .bg-light { background-color: #2b3035 !important; border-color: #495057 !important; }
+    [data-bs-theme="dark"] .text-dark { color: #e0e0e0 !important; }
+  </style>
+</head>
+<body>
+
+<div class="position-absolute top-0 end-0 p-3">
+  <button class="btn btn-sm btn-outline-secondary rounded-circle shadow-sm bg-white" onclick="toggleTema()" title="Cambiar Tema">
+    <i class="fas fa-moon" id="themeIcon"></i>
+  </button>
+</div>
+
+<div class="card-form">
+  <div class="form-header">
+    <div class="header-icon">
+      <i class="fas fa-user-shield fa-3x"></i>
+    </div>
+    <h3 th:text="${titulo}">Gestión de Usuario</h3>
+    <p class="text-muted small mt-2">Complete los datos oficiales del funcionario</p>
+  </div>
+
+  <div th:if="${error}" class="alert alert-danger small"><i class="fas fa-exclamation-triangle me-1"></i> <span th:text="${error}"></span></div>
+
+  <form th:action="@{/admin/usuarios/guardar}" th:object="${usuario}" method="post">
+    <input type="hidden" th:field="*{id}" />
+
+    <div class="mb-3">
+      <label class="form-label">RUT del Funcionario</label>
+      <div class="input-group">
+        <span class="input-group-text bg-white text-muted"><i class="fas fa-id-card"></i></span>
+        <input type="text" class="form-control" th:field="*{rut}" id="rutInput" required placeholder="Ej: 12.345.678-9" maxlength="12">
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Nombre Completo</label>
+      <div class="input-group">
+        <span class="input-group-text bg-white text-muted"><i class="fas fa-user"></i></span>
+        <input type="text" class="form-control" th:field="*{nombre}" required placeholder="Ej: JUAN PÉREZ">
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Correo Institucional</label>
+      <div class="input-group">
+        <span class="input-group-text bg-white text-muted"><i class="fas fa-envelope"></i></span>
+        <input type="email" class="form-control" th:field="*{email}" required placeholder="funcionario@municabildo.cl">
+      </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <label class="form-label">Departamento</label>
+        <select class="form-select" th:field="*{departamento}">
+          <option value="">-- SELECCIONE --</option>
+          <option th:each="d : ${departamentos}" th:value="${d.id}" th:text="${d.nombre}"></option>
+        </select>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Rol de Sistema</label>
+        <select class="form-select" th:field="*{rol}" id="rolSelect" required>
+          <option value="">-- SELECCIONE --</option>
+          <option th:each="r : ${roles}"
+                  th:value="${r.id}"
+                  th:text="${r.nombreRol}"
+                  th:data-nombre="${r.nombreRol}"></option>
+        </select>
+      </div>
+    </div>
+
+    <div class="mb-4 p-3 bg-light rounded border">
+      <label class="form-label mb-2">Contraseña de Acceso</label>
+
+      <div th:if="${usuario.id != null}" class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" role="switch" id="togglePasswordSwitch" onchange="togglePasswordInput()">
+        <label class="form-check-label small text-muted ms-2 fw-bold" for="togglePasswordSwitch">
+          <i class="fas fa-lock-open me-1"></i> ¿Desea cambiar la contraseña actual?
+        </label>
+      </div>
+
+      <div class="input-group">
+        <span class="input-group-text bg-white text-muted"><i class="fas fa-key"></i></span>
+        <input type="password" class="form-control" th:field="*{password}"
+               id="passwordInput"
+               th:required="${usuario.id == null}"
+               th:disabled="${usuario.id != null}"
+               th:placeholder="${usuario.id != null ? '******** (Contraseña oculta)' : 'Ingrese contraseña inicial'}">
+        <button class="btn btn-outline-secondary bg-white text-muted" type="button" id="togglePasswordBtn">
+          <i class="fas fa-eye"></i>
+        </button>
+      </div>
+
+      <ul class="password-rules mt-3 ps-1" id="passwordRules">
+        <li id="rule-length"><i class="far fa-circle"></i> Mínimo 8 caracteres</li>
+        <li id="rule-upper"><i class="far fa-circle"></i> Al menos una mayúscula (A-Z)</li>
+        <li id="rule-number"><i class="far fa-circle"></i> Al menos un número (0-9)</li>
+        <li id="rule-symbol"><i class="far fa-circle"></i> Un símbolo (@, #, $, %, etc.)</li>
+      </ul>
+
+      <div th:if="${usuario.id != null}" class="form-text small text-muted mt-2">
+        <i class="fas fa-shield-alt text-success me-1"></i> La contraseña se mantiene segura. Active el interruptor solo si necesita restablecerla.
+      </div>
+    </div>
+
+    <div class="form-check mb-4 kpi-box" id="kpiSection" style="display: none;">
+      <div class="d-flex align-items-center">
+        <input class="form-check-input mt-0 me-2" type="checkbox" th:field="*{kpisHabilitados}" id="kpisCheck" style="width: 20px; height: 20px;">
+        <div>
+          <label class="form-check-label fw-bold text-dark" for="kpisCheck">
+            Habilitar Estadísticas (KPIs)
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-grid gap-2">
+      <button type="submit" id="btnSubmit" class="btn btn-muni-primary">
+        <i class="fas fa-save me-2"></i> GUARDAR REGISTRO
+      </button>
+      <a href="/admin/usuarios" class="btn btn-muni-secondary">
+        <i class="fas fa-arrow-left me-2"></i> Cancelar
+      </a>
+    </div>
+  </form>
+</div>
+
+<script src="/js/control-sesion.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+
+    // --- NUEVO: FORMATO RUT AUTOMÁTICO ---
+    const rutInput = document.getElementById('rutInput');
+    if (rutInput) {
+      rutInput.addEventListener('input', function(e) {
+        let valor = e.target.value.replace(/[^0-9kK]/g, ''); // Solo números y K
+
+        if (valor.length > 1) {
+          const cuerpo = valor.slice(0, -1);
+          const dv = valor.slice(-1).toUpperCase();
+
+          // Formatear miles con puntos
+          const cuerpoFormateado = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+          e.target.value = cuerpoFormateado + "-" + dv;
+        } else {
+          e.target.value = valor.toUpperCase();
+        }
+      });
+    }
+    // -------------------------------------
+
+    // 1. KPIs Logic
+    const rolSelect = document.getElementById('rolSelect');
+    const kpiSection = document.getElementById('kpiSection');
+    const kpisCheck = document.getElementById('kpisCheck');
+
+    function toggleKpiVisibility() {
+      const selectedOption = rolSelect.options[rolSelect.selectedIndex];
+      const nombreRol = selectedOption ? selectedOption.getAttribute('data-nombre') : '';
+      if (nombreRol === 'SOPORTE') { kpiSection.style.display = 'block'; }
+      else { kpiSection.style.display = 'none'; kpisCheck.checked = false; }
+    }
+
+    if(rolSelect) {
+      rolSelect.addEventListener('change', toggleKpiVisibility);
+      toggleKpiVisibility();
+    }
+  });
+
+  // 2. Logic Password Switch & Validation
+  const switchElem = document.getElementById('togglePasswordSwitch');
+  const inputElem = document.getElementById('passwordInput');
+  const btnSubmit = document.getElementById('btnSubmit');
+  const rulesList = document.getElementById('passwordRules');
+
+  const ruleLength = document.getElementById('rule-length');
+  const ruleUpper = document.getElementById('rule-upper');
+  const ruleNumber = document.getElementById('rule-number');
+  const ruleSymbol = document.getElementById('rule-symbol');
+
+  function togglePasswordInput() {
+    if (switchElem && inputElem) {
+      inputElem.disabled = !switchElem.checked;
+      if (inputElem.disabled) {
+        inputElem.value = '';
+        inputElem.placeholder = '******** (Contraseña oculta)';
+        rulesList.style.display = 'none';
+        btnSubmit.disabled = false;
+      } else {
+        inputElem.focus();
+        inputElem.placeholder = 'Escriba la nueva contraseña';
+        rulesList.style.display = 'block';
+        validarPassword();
+      }
+    }
+  }
+
+  function validarPassword() {
+    if (inputElem.disabled) return;
+
+    const val = inputElem.value;
+    let isValid = true;
+
+    if (val.length === 0) {
+      btnSubmit.disabled = true;
+      return;
+    }
+
+    if (val.length >= 8) { setValid(ruleLength, true); } else { setValid(ruleLength, false); isValid = false; }
+    if (/[A-Z]/.test(val)) { setValid(ruleUpper, true); } else { setValid(ruleUpper, false); isValid = false; }
+    if (/[0-9]/.test(val)) { setValid(ruleNumber, true); } else { setValid(ruleNumber, false); isValid = false; }
+    if (/[@#$%^&+=!._\-]/.test(val)) { setValid(ruleSymbol, true); } else { setValid(ruleSymbol, false); isValid = false; }
+
+    btnSubmit.disabled = !isValid;
+  }
+
+  function setValid(element, valid) {
+    const icon = element.querySelector('i');
+    if (valid) {
+      element.classList.add('rule-valid');
+      element.classList.remove('rule-invalid');
+      icon.className = 'fas fa-check-circle';
+    } else {
+      element.classList.remove('rule-valid');
+      icon.className = 'far fa-circle';
+    }
+  }
+
+  if (inputElem) {
+    inputElem.addEventListener('input', validarPassword);
+    if (!switchElem) {
+      rulesList.style.display = 'block';
+      validarPassword();
+    }
+  }
+
+  // Toggle Ojo
+  const toggleBtn = document.getElementById('togglePasswordBtn');
+  if(toggleBtn) {
+    toggleBtn.addEventListener('click', function() {
+      const type = inputElem.getAttribute('type') === 'password' ? 'text' : 'password';
+      inputElem.setAttribute('type', type);
+      this.querySelector('i').classList.toggle('fa-eye');
+      this.querySelector('i').classList.toggle('fa-eye-slash');
+    });
+  }
+
+  // 3. Modo Oscuro
+  function toggleTema() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-bs-theme');
+    const icon = document.getElementById('themeIcon');
+    if (currentTheme === 'dark') {
+      html.setAttribute('data-bs-theme', 'light');
+      if(icon) icon.className = 'fas fa-moon';
+      localStorage.setItem('theme', 'light');
+    } else {
+      html.setAttribute('data-bs-theme', 'dark');
+      if(icon) icon.className = 'fas fa-sun';
+      localStorage.setItem('theme', 'dark');
+    }
+  }
+
+  (function() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-bs-theme', savedTheme);
+    document.addEventListener('DOMContentLoaded', () => {
+      const icon = document.getElementById('themeIcon');
+      if (icon && savedTheme === 'dark') icon.className = 'fas fa-sun';
+    });
+  })();
+</script>
+
+</body>
+</html>

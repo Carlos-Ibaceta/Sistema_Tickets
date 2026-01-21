@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Configuración del Sistema - Municipalidad de Cabildo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        :root {
+            --muni-azul: #003366;
+            --muni-azul-dark: #002244;
+            --muni-dorado: #c5a059;
+            --bg-gris: #f4f6f9;
+            --sidebar-width: 260px;
+        }
+
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-gris); overflow-x: hidden; }
+
+        /* SIDEBAR */
+        .sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: var(--sidebar-width); background: linear-gradient(180deg, var(--muni-azul) 0%, var(--muni-azul-dark) 100%); color: white; transition: all 0.3s; z-index: 1000; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
+        .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); background-color: white; }
+        .logo-img { max-height: 80px; width: auto; }
+        .sidebar-menu { padding: 15px 10px; }
+        .menu-item { margin-bottom: 8px; }
+        .menu-item a { color: rgba(255,255,255,0.8); text-decoration: none; display: flex; align-items: center; padding: 12px 15px; border-radius: 8px; transition: all 0.2s; font-weight: 500; font-size: 0.95rem; }
+        .menu-item a:hover { background-color: rgba(255,255,255,0.1); color: white; transform: translateX(5px); }
+        .menu-item a.active { background-color: var(--muni-dorado); color: var(--muni-azul-dark); font-weight: 700; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .menu-item i { width: 25px; text-align: center; margin-right: 10px; }
+
+        /* MAIN */
+        .main-content { margin-left: var(--sidebar-width); padding: 30px; transition: all 0.3s; min-height: 100vh; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; background: white; padding: 20px 25px; border-radius: 10px; border-left: 5px solid var(--muni-dorado); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .page-title { font-size: 1.5rem; font-weight: 700; color: var(--muni-azul); margin: 0; }
+
+        /* CONFIG CARD */
+        .config-card { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); min-height: 500px; }
+
+        /* TABS PERSONALIZADOS */
+        .nav-pills .nav-link { color: #555; font-weight: 600; padding: 12px 20px; border-radius: 8px; margin-right: 10px; transition: all 0.3s; cursor: pointer; }
+        .nav-pills .nav-link:hover { background-color: #e9ecef; color: var(--muni-azul); }
+        .nav-pills .nav-link.active { background-color: var(--muni-azul); color: white; box-shadow: 0 4px 6px rgba(0,51,102,0.3); }
+        .nav-pills .nav-link.active i { color: var(--muni-dorado); }
+
+        /* TABLAS */
+        .table-custom thead th { background-color: var(--muni-azul); color: white; border: none; padding: 15px; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; }
+        .table-custom tbody td { vertical-align: middle; padding: 15px; border-bottom: 1px solid #f0f0f0; color: #444; }
+
+        /* ITEMS LIST */
+        .list-group-item { border: 1px solid #f0f0f0; margin-bottom: 5px; border-radius: 8px !important; padding: 15px; transition: all 0.2s; }
+        .list-group-item:hover { background-color: #f8f9fa; transform: translateX(5px); border-left: 3px solid var(--muni-dorado); }
+
+        @media (max-width: 992px) {
+            .sidebar { left: -260px; } .sidebar.active { left: 0; }
+            .main-content { margin-left: 0; padding: 15px; }
+            .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 900; }
+            .overlay.active { display: block; }
+        }
+
+        /* --- MODO OSCURO (CONFIG) --- */
+        [data-bs-theme="dark"] { --bg-gris: #212529; }
+
+        /* 1. FIX LOGO */
+        [data-bs-theme="dark"] .sidebar-header {
+            background-color: transparent !important;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        [data-bs-theme="dark"] .logo-img { filter: none; }
+
+        /* 2. Tarjetas y Header */
+        [data-bs-theme="dark"] .page-header,
+        [data-bs-theme="dark"] .config-card { background-color: #343a40 !important; color: #e0e0e0; border-color: #495057; }
+
+        /* Textos */
+        [data-bs-theme="dark"] .page-title { color: #e0e0e0; }
+        [data-bs-theme="dark"] .text-dark { color: #e0e0e0 !important; }
+
+        /* Tabs (Pills) */
+        [data-bs-theme="dark"] .nav-pills .nav-link { color: #adb5bd; }
+        [data-bs-theme="dark"] .nav-pills .nav-link:hover { background-color: #495057; color: white; }
+        [data-bs-theme="dark"] .nav-pills .nav-link.active { background-color: var(--muni-azul); color: white; }
+
+        /* List Group */
+        [data-bs-theme="dark"] .list-group-item { background-color: #343a40; border-color: #495057; color: #e0e0e0; }
+        [data-bs-theme="dark"] .list-group-item:hover { background-color: #3e444a; }
+
+        /* Tablas */
+        [data-bs-theme="dark"] .table-custom thead th { background-color: #2c3034; color: #e0e0e0; }
+        [data-bs-theme="dark"] .table-custom tbody td { color: #cfd2d6; border-bottom-color: #495057; }
+
+        /* Modals */
+        [data-bs-theme="dark"] .modal-content { background-color: #343a40; color: #e0e0e0; border-color: #495057; }
+        [data-bs-theme="dark"] .modal-header { border-bottom-color: #495057; }
+        [data-bs-theme="dark"] .modal-footer { background-color: #2c3034; border-top-color: #495057; }
+        [data-bs-theme="dark"] .input-group-text { background-color: #212529; border-color: #495057; color: #adb5bd; }
+        [data-bs-theme="dark"] .form-control { background-color: #2b3035; border-color: #495057; color: #e0e0e0; }
+
+        /* Alerts */
+        [data-bs-theme="dark"] .bg-info-subtle { background-color: rgba(13, 202, 240, 0.2) !important; color: #6edff6 !important; }
+    </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <img th:src="@{/img/logo-cabildo.png}" alt="Logo Cabildo" class="logo-img">
+    </div>
+
+    <div class="sidebar-menu">
+        <div class="menu-item"><a th:href="@{/admin/dashboard}"><i class="fas fa-chart-pie"></i> <span>Panel de Control</span></a></div>
+        <div class="menu-item"><a th:href="@{/admin/usuarios}"><i class="fas fa-users-cog"></i> <span>Gestión Usuarios</span></a></div>
+        <div class="menu-item"><a th:href="@{/admin/tickets-globales}"><i class="fas fa-list-alt"></i> <span>Tickets Globales</span></a></div>
+        <div class="menu-item"><a th:href="@{/reportes}"><i class="fas fa-file-invoice"></i> <span>Reportes PDF</span></a></div>
+        <div class="menu-item"><a th:href="@{/admin/configuracion}" class="active"><i class="fas fa-sliders-h"></i> <span>Configuración</span></a></div>
+        <div class="menu-item"><a th:href="@{/admin/perfil}"><i class="fas fa-user-edit"></i> <span>Mi Perfil</span></a></div>
+
+        <div class="menu-item">
+            <button type="button" class="btn w-100 text-start text-white p-0 d-flex align-items-center bg-transparent border-0"
+                    style="padding: 12px 15px !important;" onclick="toggleTema()">
+                <i class="fas fa-moon text-warning" id="themeIcon" style="width: 25px; margin-right: 10px;"></i>
+                <span class="fw-bold" style="font-size: 0.95rem;">Tema</span>
+            </button>
+        </div>
+
+        <div class="menu-item mt-5">
+            <form th:action="@{/logout}" method="post">
+                <button class="btn w-100 text-start text-white p-0 d-flex align-items-center bg-transparent border-0" style="padding-left: 15px !important;">
+                    <i class="fas fa-sign-out-alt" style="width: 25px; margin-right: 10px;"></i> <span>Cerrar Sesión</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="main-content">
+
+    <div class="page-header">
+        <div>
+            <div class="d-flex align-items-center">
+                <button class="btn btn-outline-secondary d-lg-none me-3" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+                <h2 class="page-title"><i class="fas fa-cogs me-2"></i>Configuración del Sistema</h2>
+            </div>
+            <p class="text-muted mb-0 ms-lg-0 ms-5 ps-lg-0 ps-3">Gestión de departamentos, categorías y parámetros globales</p>
+        </div>
+        <div class="d-none d-md-block text-end">
+            <div class="small text-muted">Usuario Actual</div>
+            <div class="fw-bold text-dark" th:text="${usuarioNombre != null ? usuarioNombre : 'Administrador'}">Admin</div>
+        </div>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fas fa-check-circle me-2"></i> <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i> <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="config-card">
+
+        <ul class="nav nav-pills mb-4" id="configTabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link"
+                        th:classappend="${activeTab == 'deptos' or activeTab == null ? 'active' : ''}"
+                        data-bs-toggle="pill" data-bs-target="#deptos">
+                    <i class="fas fa-building me-2"></i> Departamentos
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link"
+                        th:classappend="${activeTab == 'cats' ? 'active' : ''}"
+                        data-bs-toggle="pill" data-bs-target="#cats">
+                    <i class="fas fa-tags me-2"></i> Categorías
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link"
+                        th:classappend="${activeTab == 'prio' ? 'active' : ''}"
+                        data-bs-toggle="pill" data-bs-target="#prio">
+                    <i class="fas fa-sort-amount-up me-2"></i> Prioridades
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content pt-2">
+
+            <div class="tab-pane fade"
+                 th:classappend="${activeTab == 'deptos' or activeTab == null ? 'show active' : ''}"
+                 id="deptos">
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0 fw-bold text-dark">Listado de Departamentos</h5>
+                    <button class="btn btn-success fw-bold" data-bs-toggle="modal" data-bs-target="#modalNuevoDepto">
+                        <i class="fas fa-plus me-2"></i> Nuevo Depto
+                    </button>
+                </div>
+
+                <div class="table-responsive rounded-3 border">
+                    <table class="table table-custom table-hover mb-0">
+                        <thead><tr><th>Nombre del Departamento</th><th class="text-end">Acciones</th></tr></thead>
+                        <tbody>
+                        <tr th:each="d : ${departamentos}">
+                            <td>
+                                <i class="fas fa-folder text-warning me-2"></i>
+                                <span th:text="${d.nombre}" class="fw-bold text-dark"></span>
+                            </td>
+                            <td class="text-end">
+                                <a th:href="@{/admin/configuracion/eliminar-depto/{id}(id=${d.id})}"
+                                   class="btn btn-sm btn-outline-danger border-0 rounded-circle"
+                                   title="Eliminar"
+                                   onclick="return confirm('¿ATENCIÓN: Eliminar este departamento podría afectar a los usuarios asignados. ¿Continuar?');">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade"
+                 th:classappend="${activeTab == 'cats' ? 'show active' : ''}"
+                 id="cats">
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0 fw-bold text-dark">Categorías de Tickets</h5>
+                    <button class="btn btn-success fw-bold" data-bs-toggle="modal" data-bs-target="#modalNuevaCat">
+                        <i class="fas fa-plus me-2"></i> Nueva Categoría
+                    </button>
+                </div>
+
+                <div class="alert alert-info border-0 bg-info-subtle text-info-emphasis mb-4">
+                    <i class="fas fa-info-circle me-2"></i> Las categorías ayudan a clasificar automáticamente los reportes.
+                </div>
+
+                <div class="list-group">
+                    <div th:each="c : ${categorias}" class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3 bg-light rounded-circle p-2 text-primary">
+                                <i class="fas fa-tag"></i>
+                            </div>
+                            <span th:text="${c.nombreCategoria}" class="fw-bold"></span>
+                        </div>
+
+                        <a th:href="@{/admin/configuracion/eliminar-cat/{id}(id=${c.id})}"
+                           class="btn btn-sm btn-outline-danger border-0 rounded-circle"
+                           title="Eliminar"
+                           onclick="return confirm('¿Estás seguro de eliminar esta categoría? Si hay tickets usándola, podría dar error.');">
+                            <i class="fas fa-trash-alt"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade"
+                 th:classappend="${activeTab == 'prio' ? 'show active' : ''}"
+                 id="prio">
+
+                <h5 class="mb-3 fw-bold text-dark">Niveles de Prioridad</h5>
+                <div class="list-group">
+                    <div th:each="p : ${prioridades}" class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-circle me-3"
+                               th:classappend="${p.nivelPrioridad == 'ALTA' ? 'text-danger' : (p.nivelPrioridad == 'MEDIA' ? 'text-warning' : 'text-success')}">
+                            </i>
+                            <span th:text="${p.nivelPrioridad}" class="fw-bold"></span>
+                        </div>
+                        <span class="badge bg-secondary rounded-pill">Sistema</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNuevoDepto" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold"><i class="fas fa-building me-2"></i> Nuevo Departamento</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/admin/configuracion/departamentos/guardar" method="post">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label for="nombreDepto" class="form-label fw-bold">Nombre</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fas fa-signature"></i></span>
+                            <input type="text" class="form-control" id="nombreDepto" name="nombre" required placeholder="Ej: Operaciones, Finanzas...">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary fw-bold px-4">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNuevaCat" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title fw-bold"><i class="fas fa-tag me-2"></i> Nueva Categoría</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/admin/configuracion/categorias/guardar" method="post">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label for="nombreCat" class="form-label fw-bold">Nombre de Categoría</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fas fa-heading"></i></span>
+                            <input type="text" class="form-control" id="nombreCat" name="nombreCategoria" required placeholder="Ej: Medio Ambiente, Tránsito...">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success fw-bold px-4">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="/js/control-sesion.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        if(toggle && sidebar && overlay) {
+            toggle.addEventListener('click', (e) => { e.stopPropagation(); sidebar.classList.toggle('active'); overlay.classList.toggle('active'); });
+            overlay.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
+        }
+    });
+
+    // --- MODO OSCURO LOGIC ---
+    function toggleTema() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-bs-theme');
+        const icon = document.getElementById('themeIcon');
+
+        if (currentTheme === 'dark') {
+            html.setAttribute('data-bs-theme', 'light');
+            if(icon) icon.className = 'fas fa-moon text-warning';
+            localStorage.setItem('theme', 'light');
+        } else {
+            html.setAttribute('data-bs-theme', 'dark');
+            if(icon) icon.className = 'fas fa-sun text-warning';
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
+    (function() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        document.addEventListener('DOMContentLoaded', () => {
+            const icon = document.getElementById('themeIcon');
+            if (icon && savedTheme === 'dark') {
+                icon.className = 'fas fa-sun text-warning';
+            }
+        });
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bolsa de Tickets - Municipalidad de Cabildo</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        /* =========================================
+           ESTILOS MUNICIPALES UNIFICADOS
+           ========================================= */
+        :root {
+            --muni-azul: #003366;
+            --muni-azul-dark: #002244;
+            --muni-dorado: #c5a059;
+            --muni-gris-fondo: #f4f6f9;
+            --sidebar-width: 260px;
+        }
+
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--muni-gris-fondo); overflow-x: hidden; }
+
+        /* SIDEBAR */
+        .sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: var(--sidebar-width); background: linear-gradient(180deg, var(--muni-azul) 0%, var(--muni-azul-dark) 100%); color: white; transition: all 0.3s; z-index: 1000; box-shadow: 4px 0 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        .sidebar-header { padding: 20px; text-align: center; background-color: white; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .logo-img { max-height: 80px; width: auto; }
+        .sidebar-menu { padding: 15px 10px; flex-grow: 1; }
+        .menu-item { margin-bottom: 8px; }
+        .menu-item a, .btn-logout-menu { color: rgba(255,255,255,0.9); text-decoration: none; display: flex; align-items: center; padding: 12px 15px; border-radius: 8px; transition: all 0.2s; font-weight: 500; font-size: 0.95rem; width: 100%; border: none; background: none; text-align: left; cursor: pointer; }
+        .menu-item a:hover, .btn-logout-menu:hover { background-color: rgba(255,255,255,0.1); color: white; transform: translateX(5px); }
+        .menu-item a.active { background-color: var(--muni-dorado); color: var(--muni-azul-dark); font-weight: 700; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .menu-item i, .btn-logout-menu i { width: 25px; text-align: center; margin-right: 10px; }
+        .menu-separator { border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 10px; }
+
+        /* CONTENIDO PRINCIPAL */
+        .main-content { margin-left: var(--sidebar-width); padding: 30px; transition: all 0.3s; min-height: 100vh; }
+
+        /* HEADER DE PÁGINA */
+        .header-section {
+            background: white; border-radius: 12px; padding: 20px 25px; margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid var(--muni-dorado);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .page-title { color: var(--muni-azul); font-weight: 700; margin: 0; }
+
+        /* BARRA DE FILTROS (REDSEÑADO) */
+        .filter-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e9ecef; }
+        .filter-label { font-size: 0.85rem; font-weight: 700; color: var(--muni-azul); margin-bottom: 8px; display: block; }
+        .filter-label i { margin-right: 5px; color: var(--muni-dorado); }
+        .form-select-filter, .form-control-filter { border: 1px solid #dee2e6; border-radius: 6px; padding: 10px; font-size: 0.95rem; background-color: #fcfcfc; transition: all 0.2s; }
+        .form-select-filter:focus, .form-control-filter:focus { border-color: var(--muni-azul); box-shadow: 0 0 0 3px rgba(0, 51, 102, 0.1); background-color: white; }
+        .btn-filter { background-color: var(--muni-azul); color: white; border: none; padding: 10px 20px; font-weight: 600; border-radius: 6px; width: 100%; transition: 0.3s; }
+        .btn-filter:hover { background-color: var(--muni-azul-dark); box-shadow: 0 4px 10px rgba(0,0,0,0.15); transform: translateY(-1px); }
+        .btn-reset { background-color: white; color: #6c757d; border: 1px solid #dee2e6; padding: 10px; border-radius: 6px; transition: 0.3s; width: 100%; display: block; text-align: center; }
+        .btn-reset:hover { background-color: #f8f9fa; color: #dc3545; border-color: #dc3545; }
+
+        /* TARJETA DE CONTENIDO */
+        .card-muni { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: none; overflow: hidden; padding-bottom: 20px;}
+
+        /* TABLA PERSONALIZADA */
+        .table-custom { margin-bottom: 0; }
+        .table-custom thead th { background-color: #f8f9fa; color: var(--muni-azul); font-weight: 700; border-bottom: 2px solid #e9ecef; padding: 15px 20px; text-transform: uppercase; font-size: 0.85rem; }
+        .table-custom tbody td { padding: 15px 20px; vertical-align: middle; border-bottom: 1px solid #f0f0f0; color: #444; }
+        .table-custom tbody tr:hover { background-color: #fcfcfc; }
+
+        /* BADGES */
+        .badge-status { padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 0.75rem; letter-spacing: 0.5px; }
+
+        /* BOTONES */
+        .btn-assign { background-color: #198754; color: white; border: none; font-weight: 600; transition: all 0.3s; border-radius: 6px; padding: 6px 15px; }
+        .btn-assign:hover { background-color: #146c43; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(25, 135, 84, 0.2); }
+
+        /* ESTILOS PAGINACIÓN */
+        .pagination .page-link { color: var(--muni-azul); border: none; margin: 0 3px; border-radius: 5px; font-weight: 600; }
+        .pagination .page-link:hover { background-color: #e9ecef; color: var(--muni-azul-dark); }
+        .pagination .page-item.active .page-link { background-color: var(--muni-azul); color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .pagination .page-item.disabled .page-link { color: #ccc; background-color: transparent; }
+
+        /* --- ESTILOS SEMÁFORO --- */
+        .semaforo-dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .sem-verde { background-color: #2ecc71; box-shadow: 0 0 4px #2ecc71; }
+        .sem-amarillo { background-color: #f1c40f; box-shadow: 0 0 4px #f1c40f; }
+        .sem-rojo { background-color: #e74c3c; box-shadow: 0 0 6px #e74c3c; animation: pulse-red 2s infinite; }
+
+        @keyframes pulse-red {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(231, 76, 60, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar { left: -260px; } .sidebar.active { left: 0; }
+            .main-content { margin-left: 0; padding: 20px; }
+            .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 900; }
+            .overlay.active { display: block; }
+        }
+
+        /* --- MODO OSCURO (CON FIX FILTROS) --- */
+        [data-bs-theme="dark"] { --muni-gris-fondo: #212529; }
+        [data-bs-theme="dark"] .sidebar-header { background-color: transparent !important; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        [data-bs-theme="dark"] .logo-img { filter: none; }
+        [data-bs-theme="dark"] .card-muni, [data-bs-theme="dark"] .header-section, [data-bs-theme="dark"] .filter-card { background-color: #343a40 !important; color: #e0e0e0; border-color: #495057; }
+        [data-bs-theme="dark"] .page-title { color: #e0e0e0; }
+        [data-bs-theme="dark"] .text-dark { color: #e0e0e0 !important; }
+        [data-bs-theme="dark"] .text-muted { color: #adb5bd !important; }
+        [data-bs-theme="dark"] .text-secondary { color: #adb5bd !important; }
+        [data-bs-theme="dark"] .bg-light { background-color: #2b3035 !important; border-color: #495057 !important; color: #adb5bd; }
+        [data-bs-theme="dark"] .table-custom thead th { background-color: #2c3034; color: #e0e0e0; border-bottom-color: #495057; }
+        [data-bs-theme="dark"] .table-custom tbody td { color: #cfd2d6; border-bottom-color: #495057; }
+        [data-bs-theme="dark"] .table-custom tbody tr:hover { background-color: #3e444a; }
+        [data-bs-theme="dark"] .pagination .page-link { background-color: #343a40; border-color: #495057; color: #e0e0e0; }
+        [data-bs-theme="dark"] .pagination .page-item.active .page-link { background-color: var(--muni-azul); color: white; }
+
+        /* Filtros Oscuros */
+        [data-bs-theme="dark"] .filter-label { color: #6ea8fe; }
+        [data-bs-theme="dark"] .form-select-filter, [data-bs-theme="dark"] .form-control-filter { background-color: #2b3035; border-color: #495057; color: #e0e0e0; }
+        [data-bs-theme="dark"] .btn-reset { background-color: #2c3034; border-color: #495057; color: #adb5bd; }
+        [data-bs-theme="dark"] .btn-reset:hover { background-color: #dc3545; color: white; border-color: #dc3545; }
+
+        /* Modal Oscuro */
+        [data-bs-theme="dark"] .modal-content { background-color: #343a40; color: #e0e0e0; border: 1px solid #495057; }
+        [data-bs-theme="dark"] .modal-header { border-bottom-color: #495057; }
+        [data-bs-theme="dark"] .modal-footer { border-top-color: #495057; }
+        [data-bs-theme="dark"] .form-select, [data-bs-theme="dark"] .form-control { background-color: #2b3035; color: #e0e0e0; border-color: #495057; }
+    </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <img th:src="@{/img/logo-cabildo.png}" alt="Logo Cabildo" class="logo-img">
+    </div>
+    <div class="sidebar-menu">
+        <div class="menu-item"><a th:href="@{/soporte/dashboard}"><i class="fas fa-home"></i> <span>Panel Principal</span></a></div>
+        <div class="menu-item"><a th:href="@{/soporte/mis-tickets}"><i class="fas fa-tasks"></i> <span>Mis Tickets</span></a></div>
+        <div class="menu-item"><a th:href="@{/soporte/tickets-disponibles}" class="active"><i class="fas fa-inbox"></i> <span>Bolsa de Tickets</span></a></div>
+        <div class="menu-item" th:if="${session.usuarioKpisHabilitados}">
+            <a th:href="@{/soporte/estadisticas}"><i class="fas fa-chart-line"></i> <span>Estadísticas</span></a>
+        </div>
+        <div class="menu-item"><a th:href="@{/soporte/historial}"><i class="fas fa-history"></i> <span>Historial</span></a></div>
+        <div class="menu-item"><a th:href="@{/soporte/perfil}"><i class="fas fa-user-cog"></i> <span>Mi Perfil</span></a></div>
+
+        <div class="menu-item">
+            <button type="button" class="btn-logout-menu text-warning" onclick="toggleTema()">
+                <i class="fas fa-moon" id="themeIcon"></i> <span>Tema</span>
+            </button>
+        </div>
+
+        <div class="menu-separator"></div>
+        <div class="menu-item">
+            <form th:action="@{/logout}" method="post">
+                <button class="btn-logout-menu"><i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span></button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="main-content">
+
+    <div class="d-flex align-items-center mb-4 d-lg-none">
+        <button class="btn btn-outline-secondary me-3" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+        <h4 class="m-0 fw-bold text-dark">Bolsa de Trabajo</h4>
+    </div>
+
+    <div class="header-section">
+        <div class="d-flex align-items-center">
+            <div class="bg-light rounded p-3 me-3 text-primary d-none d-md-block">
+                <i class="fas fa-inbox fa-lg" style="color: var(--muni-azul);"></i>
+            </div>
+            <div>
+                <h3 class="page-title">Tickets Disponibles</h3>
+                <p class="mb-0 text-muted small">Solicitudes nuevas pendientes de asignación</p>
+            </div>
+        </div>
+        <div class="text-end d-none d-md-block">
+            <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.7rem;">Estado Actual</small>
+            <span class="badge bg-success" th:if="${tickets != null && !tickets.isEmpty()}">Nuevos Tickets</span>
+            <span class="badge bg-secondary" th:if="${tickets == null || tickets.isEmpty()}">Bandeja Vacía</span>
+        </div>
+    </div>
+
+    <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show mb-4 shadow-sm border-start border-success border-4" role="alert">
+        <i class="fas fa-check-circle me-2"></i> <strong th:text="${mensajeExito}">Ticket asignado correctamente</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div id="alerta-sla-container" class="mb-4"></div>
+
+    <div class="filter-card">
+        <form th:action="@{/soporte/tickets-disponibles}" method="get">
+            <div class="row g-3 align-items-end">
+
+                <div class="col-md-5 col-lg-6">
+                    <label class="filter-label"><i class="fas fa-search"></i> Buscar Ticket</label>
+                    <input type="text" name="busqueda" class="form-control form-control-filter"
+                           placeholder="Escribe el nombre del solicitante, asunto..."
+                           th:value="${busqueda}">
+                </div>
+
+                <div class="col-md-4 col-lg-3">
+                    <label class="filter-label"><i class="fas fa-sort-amount-down"></i> Ordenar Por</label>
+                    <select name="orden" class="form-select form-select-filter">
+                        <option value="reciente" th:selected="${ordenSeleccionado == 'reciente'}">Más Recientes</option>
+                        <option value="antiguo" th:selected="${ordenSeleccionado == 'antiguo'}">Más Antiguos</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3 col-lg-3">
+                    <div class="row g-2">
+                        <div class="col-8">
+                            <button type="submit" class="btn btn-filter h-100"><i class="fas fa-filter me-2"></i> Filtrar</button>
+                        </div>
+                        <div class="col-4">
+                            <a th:href="@{/soporte/tickets-disponibles}" class="btn btn-reset h-100 d-flex align-items-center justify-content-center" title="Borrar Filtros"><i class="fas fa-undo"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+
+    <div class="card-muni">
+
+        <div th:if="${tickets == null || tickets.isEmpty()}" class="text-center py-5">
+            <div class="mb-3 opacity-25" style="color: var(--muni-azul);">
+                <i class="fas fa-clipboard-check fa-4x"></i>
+            </div>
+            <h4 class="fw-bold text-secondary">¡Bandeja al día!</h4>
+            <p class="text-muted mb-4">No hay tickets pendientes con esos criterios.</p>
+            <a th:href="@{/soporte/tickets-disponibles}" class="btn btn-outline-primary btn-sm rounded-pill px-4">
+                Ver todos los tickets
+            </a>
+        </div>
+
+        <div class="table-responsive" th:if="${tickets != null && !tickets.isEmpty()}">
+            <table class="table table-custom table-hover align-middle">
+                <thead>
+                <tr>
+                    <th><i class="fas fa-hashtag me-1"></i> ID</th>
+                    <th>Asunto</th>
+                    <th>Solicitante</th>
+                    <th><i class="far fa-calendar-alt me-1"></i> Fecha</th>
+                    <th>Categoría</th>
+                    <th>Prioridad</th>
+                    <th class="text-end">Acción</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="t : ${tickets}">
+                    <td class="fw-bold" style="color: var(--muni-azul);" th:text="'#' + ${t.id}">#000</td>
+
+                    <td class="fw-semibold" th:text="${t.asunto}">Problema PC</td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-light d-flex justify-content-center align-items-center me-2 text-secondary" style="width:30px;height:30px; font-size: 0.8rem;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span class="small" th:text="${t.usuario != null ? t.usuario.nombre : 'Anónimo'}">Usuario</span>
+                        </div>
+                    </td>
+                    <td class="small text-muted" th:text="${t.fechaCreacion != null ? #temporals.format(t.fechaCreacion, 'dd/MM/yyyy HH:mm') : '-'}">12/01/2026</td>
+
+                    <td><span class="badge bg-light text-secondary border fw-normal" th:text="${t.categoria != null ? t.categoria.nombreCategoria : 'Sin Categoría'}">General</span></td>
+
+                    <td>
+                        <span th:if="${t.prioridad != null}"
+                              class="badge-status"
+                              th:classappend="${t.prioridad.nivelPrioridad == 'ALTA'} ? 'bg-danger text-white' : (${t.prioridad.nivelPrioridad == 'MEDIA'} ? 'bg-warning text-dark' : 'bg-info text-white')"
+                              th:text="${t.prioridad.nivelPrioridad}">
+                        </span>
+                        <span th:if="${t.prioridad == null}" class="badge bg-secondary">Sin Asignar</span>
+                    </td>
+
+                    <td class="text-end">
+                        <a th:href="@{/soporte/detalle/{id}(id=${t.id})}" class="btn btn-sm btn-outline-info me-1 shadow-sm" title="Ver Detalles">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <button type="button" class="btn btn-assign shadow-sm"
+                                th:data-id="${t.id}"
+                                th:data-asunto="${t.asunto}"
+                                onclick="abrirModalAsignar(this)">
+                            <i class="fas fa-hand-paper me-1"></i> Tomar
+                        </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <nav aria-label="Navegación de tickets" class="mt-4 pb-3" th:if="${tickets != null && tickets.totalPages > 1}">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${tickets.first} ? 'disabled'">
+                    <a class="page-link" th:href="@{/soporte/tickets-disponibles(page=${tickets.number - 1}, orden=${ordenSeleccionado}, busqueda=${busqueda})}" tabindex="-1">
+                        <i class="fas fa-chevron-left"></i> Anterior
+                    </a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, tickets.totalPages - 1)}"
+                    th:classappend="${i == tickets.number} ? 'active'"
+                    th:if="${i >= tickets.number - 2 and i <= tickets.number + 2}">
+                    <a class="page-link" th:href="@{/soporte/tickets-disponibles(page=${i}, orden=${ordenSeleccionado}, busqueda=${busqueda})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${tickets.last} ? 'disabled'">
+                    <a class="page-link" th:href="@{/soporte/tickets-disponibles(page=${tickets.number + 1}, orden=${ordenSeleccionado}, busqueda=${busqueda})}">
+                        Siguiente <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<div class="modal fade" id="modalAsignar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold text-primary"><i class="fas fa-tasks me-2"></i>Clasificar y Asignar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form th:action="@{/soporte/asignar}" method="post">
+                <div class="modal-body">
+                    <input type="hidden" name="ticketId" id="modalTicketId">
+                    <p class="mb-3 text-muted">Estás tomando el ticket: <strong id="modalTicketAsunto" class="text-dark"></strong></p>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase text-secondary">Categoría del Problema</label>
+                        <select name="categoriaId" id="selectCategoria" class="form-select" required onchange="filtrarSubcategorias()">
+                            <option value="">-- Seleccionar --</option>
+                            <option th:each="cat : ${categorias}"
+                                    th:value="${cat.id}"
+                                    th:text="${cat.nombreCategoria}"></option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase text-secondary">Subcategoría (Opcional)</label>
+                        <select name="subcategoriaId" id="selectSubcategoria" class="form-select" disabled>
+                            <option value="">-- Seleccione una categoría primero --</option>
+                            <option th:each="sub : ${subcategorias}"
+                                    th:value="${sub.id}"
+                                    th:text="${sub.nombreSubcategoria}"
+                                    th:data-parent="${sub.categoria.id}"
+                                    class="sub-option"
+                                    style="display:none;"></option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase text-secondary">Nivel de Prioridad</label>
+                        <select name="prioridadId" class="form-select" required>
+                            <option value="">-- Seleccionar --</option>
+                            <option th:each="prio : ${prioridades}" th:value="${prio.id}" th:text="${prio.nivelPrioridad}"></option>
+                        </select>
+                    </div>
+
+                    <div class="alert alert-info py-2 d-flex align-items-center small">
+                        <i class="fas fa-stopwatch me-2 fa-lg"></i>
+                        <div>El cronómetro SLA comenzará al confirmar esta acción.</div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary fw-bold px-4">Confirmar Asignación</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="/js/control-sesion.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Lógica del Modal
+    function abrirModalAsignar(btn) {
+        const id = btn.getAttribute('data-id');
+        const asunto = btn.getAttribute('data-asunto');
+
+        document.getElementById('modalTicketId').value = id;
+        document.getElementById('modalTicketAsunto').innerText = asunto;
+
+        const catSelect = document.getElementById('selectCategoria');
+        const subSelect = document.getElementById('selectSubcategoria');
+        catSelect.value = "";
+        subSelect.value = "";
+        subSelect.disabled = true;
+        subSelect.options[0].text = "-- Seleccione una categoría primero --";
+
+        var myModal = new bootstrap.Modal(document.getElementById('modalAsignar'));
+        myModal.show();
+    }
+
+    // Filtrado Dinámico de Categorías
+    function filtrarSubcategorias() {
+        const catSelect = document.getElementById('selectCategoria');
+        const subSelect = document.getElementById('selectSubcategoria');
+        const categoriaId = catSelect.value;
+        const subOptions = document.querySelectorAll('.sub-option');
+
+        subSelect.value = "";
+
+        if (!categoriaId) {
+            subSelect.disabled = true;
+            subSelect.options[0].text = "-- Seleccione una categoría primero --";
+            return;
+        }
+
+        let hayCoincidencias = false;
+        subOptions.forEach(option => {
+            if (option.getAttribute('data-parent') === categoriaId) {
+                option.style.display = 'block';
+                hayCoincidencias = true;
+            } else {
+                option.style.display = 'none';
+            }
+        });
+
+        if (hayCoincidencias) {
+            subSelect.disabled = false;
+            subSelect.options[0].text = "-- Seleccione una opción --";
+        } else {
+            subSelect.disabled = true;
+            subSelect.options[0].text = "-- No aplica para esta categoría --";
+        }
+    }
+
+    // Lógica Sidebar
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        if(toggle && sidebar && overlay) {
+            toggle.addEventListener('click', (e) => { e.stopPropagation(); sidebar.classList.toggle('active'); overlay.classList.toggle('active'); });
+            overlay.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
+        }
+    });
+
+    // Toggle Tema
+    function toggleTema() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-bs-theme');
+        const icon = document.getElementById('themeIcon');
+
+        if (currentTheme === 'dark') {
+            html.setAttribute('data-bs-theme', 'light');
+            if(icon) icon.className = 'fas fa-moon';
+            localStorage.setItem('theme', 'light');
+        } else {
+            html.setAttribute('data-bs-theme', 'dark');
+            if(icon) icon.className = 'fas fa-sun';
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
+    (function() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        document.addEventListener('DOMContentLoaded', () => {
+            const icon = document.getElementById('themeIcon');
+            if (icon && savedTheme === 'dark') {
+                icon.className = 'fas fa-sun';
+            }
+        });
+    })();
+
+    // --- SCRIPT SEMÁFORO + REORDENAMIENTO ---
+    document.addEventListener('DOMContentLoaded', function() {
+        // Índices en tickets-disponibles.html:
+        // 0:ID, 1:Asunto, 2:Solicitante, 3:Fecha, 4:Categoria, 5:Prioridad, 6:Accion
+        const INDICE_COL_ID = 0;
+        const INDICE_COL_FECHA = 3;
+
+        const tablaBody = document.querySelector('table tbody');
+        if (!tablaBody) return;
+
+        const filas = Array.from(tablaBody.querySelectorAll('tr'));
+        let ticketsVencidos = 0;
+
+        let filasCriticas = [];
+        let filasNormales = [];
+
+        filas.forEach(fila => {
+            const celdas = fila.querySelectorAll('td');
+            if (celdas.length <= INDICE_COL_FECHA) {
+                filasNormales.push(fila);
+                return;
+            }
+
+            // 1. Obtener Fecha
+            const textoFecha = celdas[INDICE_COL_FECHA].innerText.trim();
+            if (!textoFecha || textoFecha === '-') {
+                filasNormales.push(fila);
+                return;
+            }
+
+            const partes = textoFecha.split(' ');
+            if (partes.length < 2) {
+                filasNormales.push(fila);
+                return;
+            }
+
+            const fechaParts = partes[0].split('/');
+            const horaParts = partes[1].split(':');
+
+            const fechaTicket = new Date(fechaParts[2], fechaParts[1] - 1, fechaParts[0], horaParts[0], horaParts[1]);
+            const diferenciaMs = new Date() - fechaTicket;
+            const horasPasadas = diferenciaMs / (1000 * 60 * 60);
+
+            // 2. Pintar y Clasificar
+            const idCelda = celdas[INDICE_COL_ID];
+            const contenidoOriginal = idCelda.innerText.trim();
+
+            let clase = 'sem-verde';
+            let title = 'Reciente';
+
+            if (horasPasadas >= 6) {
+                // --- CRÍTICO ---
+                clase = 'sem-rojo';
+                title = 'Crítico: +6 horas esperando asignación';
+                ticketsVencidos++;
+
+                fila.style.backgroundColor = "rgba(220, 53, 69, 0.1)";
+                fila.style.borderLeft = "4px solid #dc3545";
+
+                idCelda.innerHTML = `<span class="semaforo-dot ${clase}" title="${title}"></span>${contenidoOriginal}`;
+                filasCriticas.push(fila);
+            } else {
+                // --- NORMAL ---
+                if (horasPasadas >= 3) {
+                    clase = 'sem-amarillo';
+                    title = 'Atención';
+                    fila.style.borderLeft = "4px solid #ffc107";
+                } else {
+                    fila.style.borderLeft = "4px solid #2ecc71";
+                }
+
+                idCelda.innerHTML = `<span class="semaforo-dot ${clase}" title="${title}"></span>${contenidoOriginal}`;
+                filasNormales.push(fila);
+            }
+        });
+
+        // 3. REORDENAR (Críticos arriba)
+        if (filasCriticas.length > 0) {
+            tablaBody.innerHTML = '';
+            filasCriticas.forEach(fila => tablaBody.appendChild(fila));
+            filasNormales.forEach(fila => tablaBody.appendChild(fila));
+        }
+
+        // 4. Alerta
+        if (ticketsVencidos > 0) {
+            const contenedor = document.getElementById('alerta-sla-container');
+            if (contenedor) {
+                contenedor.innerHTML = `
+                    <div class="alert alert-danger d-flex align-items-center shadow-sm border-danger border-start border-4" role="alert">
+                        <i class="fas fa-exclamation-triangle fa-2x me-3 text-danger"></i>
+                        <div>
+                            <h5 class="alert-heading fw-bold mb-0">¡ATENCIÓN! TICKETS SIN ASIGNAR</h5>
+                            <p class="mb-0">Hay <strong>${ticketsVencidos} ticket(s)</strong> que llevan más de 6 horas en la bolsa sin ser tomados.</p>
+                        </div>
+                    </div>`;
+            }
+        }
+    });
+</script>
+</body>
+</html>

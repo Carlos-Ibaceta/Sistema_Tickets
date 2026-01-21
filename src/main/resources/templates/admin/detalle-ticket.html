@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Detalle Ticket</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+  <style>
+    /* =========================================
+       ESTILOS CORPORATIVOS UNIFICADOS
+       ========================================= */
+    :root {
+      --muni-azul: #003366;
+      --muni-azul-dark: #002244;
+      --muni-dorado: #c5a059;
+      --bg-gris: #f4f6f9;
+      --sidebar-width: 260px;
+    }
+
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-gris); overflow-x: hidden; }
+
+    /* --- SIDEBAR --- */
+    .sidebar {
+      position: fixed; top: 0; left: 0; height: 100vh; width: var(--sidebar-width);
+      background: linear-gradient(180deg, var(--muni-azul) 0%, var(--muni-azul-dark) 100%);
+      color: white; transition: all 0.3s; z-index: 1000; box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+      display: flex; flex-direction: column;
+    }
+    .sidebar-header {
+      padding: 20px; text-align: center; background-color: white;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+    .logo-img { max-height: 80px; width: auto; }
+
+    .sidebar-menu { padding: 15px 10px; flex-grow: 1; }
+    .menu-item { margin-bottom: 8px; }
+
+    .menu-item a {
+      color: rgba(255,255,255,0.9); text-decoration: none; display: flex; align-items: center;
+      padding: 12px 15px; border-radius: 8px; transition: all 0.2s; font-weight: 500; font-size: 0.95rem;
+    }
+    .menu-item a:hover {
+      background-color: rgba(255,255,255,0.1); color: white; transform: translateX(5px);
+    }
+    .menu-item a.active {
+      background-color: var(--muni-dorado); color: var(--muni-azul-dark); font-weight: 700; box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    }
+    .menu-item i { width: 25px; text-align: center; margin-right: 10px; }
+
+    /* Logout Button Style */
+    .btn-logout-menu { color: rgba(255,255,255,0.9); text-decoration: none; display: flex; align-items: center; padding: 12px 15px; border-radius: 8px; transition: all 0.2s; font-weight: 500; font-size: 0.95rem; width: 100%; border: none; background: none; text-align: left; cursor: pointer; }
+    .btn-logout-menu:hover { background-color: rgba(255,255,255,0.1); color: white; transform: translateX(5px); }
+    .btn-logout-menu i { width: 25px; text-align: center; margin-right: 10px; }
+
+    /* CONTENIDO */
+    .main-content { margin-left: var(--sidebar-width); padding: 30px; transition: all 0.3s; min-height: 100vh; }
+
+    /* TARJETA DETALLE */
+    .gestion-card { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); overflow: hidden; border: none; margin-bottom: 20px; }
+    .gestion-card-header { background-color: var(--muni-azul); padding: 25px 30px; border-bottom: 4px solid var(--muni-dorado); display: flex; justify-content: space-between; align-items: center; }
+    .gestion-card-header h4 { color: white; margin: 0; font-weight: 600; font-size: 1.25rem; }
+    .gestion-card-header .ticket-id { background-color: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 6px; font-size: 0.95rem; color: white; font-weight: bold; }
+
+    .gestion-card-body { padding: 35px; }
+
+    .label-detail { font-size: 0.8rem; text-transform: uppercase; color: #6c757d; font-weight: 700; margin-bottom: 5px; letter-spacing: 0.5px; }
+    .value-detail { font-size: 1rem; color: #212529; font-weight: 500; display: flex; align-items: center; }
+    .value-detail i { color: var(--muni-azul); margin-right: 8px; width: 20px; text-align: center; }
+
+    .desc-box { background-color: #f8f9fa; border: 1px solid #e9ecef; border-left: 4px solid #ced4da; padding: 20px; border-radius: 6px; margin-top: 20px; color: #495057; line-height: 1.6; }
+
+    /* TARJETA LATERAL ADMIN */
+    .admin-panel-card { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e9ecef; }
+    .admin-panel-header { background-color: #343a40; color: white; padding: 15px 20px; font-weight: 700; border-bottom: 1px solid #212529; }
+
+    /* TIMELINE */
+    .timeline-item { position: relative; padding-left: 2rem; padding-bottom: 1.5rem; border-left: 2px solid #e2e8f0; }
+    .timeline-item:last-child { border-left: 2px solid transparent; }
+    .timeline-dot { position: absolute; left: -0.6rem; top: 0; width: 1.2rem; height: 1.2rem; background: white; border: 3px solid var(--muni-azul); border-radius: 50%; }
+    .timeline-content { background: #f8f9fa; padding: 10px 15px; border-radius: 8px; border: 1px solid #e9ecef; }
+
+    @media (max-width: 992px) {
+      .sidebar { left: -260px; } .sidebar.active { left: 0; }
+      .main-content { margin-left: 0; padding: 20px; }
+      .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 900; }
+      .overlay.active { display: block; }
+    }
+
+    /* MODO OSCURO */
+    [data-bs-theme="dark"] { --bg-gris: #212529; }
+    [data-bs-theme="dark"] .sidebar-header { background-color: transparent !important; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    [data-bs-theme="dark"] .logo-img { filter: none; }
+    [data-bs-theme="dark"] .gestion-card, [data-bs-theme="dark"] .admin-panel-card { background-color: #212529; color: #e0e0e0; border-color: #495057; }
+    [data-bs-theme="dark"] .gestion-card-header { background-color: #1a1d20; border-bottom-color: #c5a059; }
+    [data-bs-theme="dark"] .admin-panel-header { background-color: #1a1d20; }
+    [data-bs-theme="dark"] .label-detail { color: #adb5bd; }
+    [data-bs-theme="dark"] .value-detail { color: #e0e0e0; }
+    [data-bs-theme="dark"] .text-dark { color: #e0e0e0 !important; }
+    [data-bs-theme="dark"] .value-detail i { color: #6ea8fe; }
+    [data-bs-theme="dark"] .desc-box { background-color: #2c3034; border-color: #495057; color: #e0e0e0; }
+    [data-bs-theme="dark"] .bg-light { background-color: #2b3035 !important; border-color: #495057 !important; color: #e0e0e0 !important; }
+    [data-bs-theme="dark"] .modal-content { background-color: #212529; color: white; border-color: #495057; }
+    [data-bs-theme="dark"] .form-select { background-color: #2c3034; color: white; border-color: #495057; }
+  </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <img th:src="@{/img/logo-cabildo.png}" alt="Logo Cabildo" class="logo-img">
+  </div>
+  <div class="sidebar-menu">
+    <div class="menu-item"><a th:href="@{/admin/dashboard}"><i class="fas fa-chart-pie"></i> <span>Panel de Control</span></a></div>
+    <div class="menu-item"><a th:href="@{/admin/usuarios}"><i class="fas fa-users-cog"></i> <span>Gestión Usuarios</span></a></div>
+    <div class="menu-item"><a th:href="@{/admin/tickets-globales}" class="active"><i class="fas fa-ticket-alt"></i> <span>Tickets Globales</span></a></div>
+    <div class="menu-item"><a th:href="@{/reportes}"><i class="fas fa-file-invoice"></i> <span>Reportes PDF</span></a></div>
+    <div class="menu-item"><a th:href="@{/admin/configuracion}"><i class="fas fa-sliders-h"></i> <span>Configuración</span></a></div>
+    <div class="menu-item"><a th:href="@{/admin/perfil}"><i class="fas fa-user-edit"></i> <span>Mi Perfil</span></a></div>
+
+    <div class="menu-item">
+      <button type="button" class="btn-logout-menu text-warning" onclick="toggleTema()">
+        <i class="fas fa-moon" id="themeIcon"></i> <span>Tema</span>
+      </button>
+    </div>
+
+    <div class="menu-item mt-4">
+      <form th:action="@{/logout}" method="post">
+        <button class="btn-logout-menu">
+          <i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="main-content">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <button class="btn btn-outline-dark d-lg-none me-2" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+      <h3 class="fw-bold text-dark d-inline-block">Administración de Ticket</h3>
+    </div>
+    <a th:href="${esDesdeHistorial} ? '/admin/historial-global' : '/admin/tickets-globales'"
+       class="btn btn-outline-secondary btn-sm fw-bold">
+      <i class="fas fa-arrow-left me-2"></i> Volver
+    </a>
+  </div>
+
+  <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+    <i class="fas fa-check-circle me-2"></i> <span th:text="${mensajeExito}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-8">
+      <div class="gestion-card">
+        <div class="gestion-card-header">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-info-circle text-white-50 fa-2x me-3"></i>
+            <div>
+              <h4>Información del Ticket</h4>
+              <div class="text-white-50 small">ID Interno de Seguimiento</div>
+            </div>
+          </div>
+          <span class="ticket-id" th:text="'#' + ${ticket.id}">#000</span>
+        </div>
+
+        <div class="gestion-card-body">
+          <div class="row g-4 mb-4 pb-4 border-bottom">
+            <div class="col-md-3">
+              <div class="label-detail">Estado</div>
+              <span class="badge rounded-pill"
+                    th:classappend="${ticket.estadoTicket.nombreEstado == 'RESUELTO'} ? 'bg-success' :
+                                   (${ticket.estadoTicket.nombreEstado == 'CANCELADO'} ? 'bg-dark' : 'bg-primary')"
+                    th:text="${#strings.replace(ticket.estadoTicket.nombreEstado, '_', ' ')}">ESTADO</span>
+            </div>
+            <div class="col-md-3">
+              <div class="label-detail">Prioridad</div>
+              <span class="badge rounded-pill"
+                    th:classappend="${ticket.prioridad != null && ticket.prioridad.nivelPrioridad == 'ALTA'} ? 'bg-danger' : 'bg-secondary'"
+                    th:text="${ticket.prioridad != null ? ticket.prioridad.nivelPrioridad : 'Sin Asignar'}">Alta</span>
+            </div>
+            <div class="col-md-3">
+              <div class="label-detail">Fecha</div>
+              <div class="value-detail"><i class="far fa-calendar-alt"></i> <span th:text="${#temporals.format(ticket.fechaCreacion, 'dd/MM/yyyy')}"></span></div>
+            </div>
+            <div class="col-md-3">
+              <div class="label-detail">Solicitante</div>
+              <div class="value-detail"><i class="fas fa-user"></i> <span th:text="${ticket.usuario.nombre}">Juan</span></div>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <div class="label-detail text-primary">Asunto</div>
+            <h5 class="fw-bold text-dark mt-1" th:text="${ticket.asunto}">Problema...</h5>
+          </div>
+
+          <div class="mb-4">
+            <div class="label-detail">Descripción</div>
+            <div class="desc-box">
+              <p class="mb-0" th:text="${ticket.descripcion}">...</p>
+            </div>
+          </div>
+
+          <div class="mb-4" th:if="${ticket.evidencia != null and !ticket.evidencia.isEmpty()}">
+            <div class="label-detail">Evidencia</div>
+            <div class="d-flex align-items-center p-3 border rounded bg-light">
+              <i class="fas fa-paperclip me-3 text-secondary"></i>
+              <span class="me-auto text-muted small" th:text="${ticket.evidencia}">archivo.jpg</span>
+              <button type="button" class="btn btn-sm btn-primary"
+                      th:data-url="@{'/uploads/' + ${ticket.evidencia}}"
+                      onclick="verImagen(this.getAttribute('data-url'))">
+                <i class="fas fa-eye me-1"></i> Ver
+              </button>
+            </div>
+          </div>
+
+          <div class="timeline-section mt-5 border-top pt-4">
+            <h5 class="fw-bold text-secondary mb-4"><i class="fas fa-history me-2"></i>Historial</h5>
+            <div class="ps-2">
+              <div class="timeline-item" th:each="audit : ${ticket.auditorias}">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content shadow-sm">
+                  <div class="d-flex justify-content-between mb-1">
+                    <strong class="text-primary" th:text="${audit.usuarioAccion}">Usuario</strong>
+                    <small class="text-muted" th:text="${#temporals.format(audit.fechaCambio, 'dd/MM HH:mm')}"></small>
+                  </div>
+                  <div class="small">
+                    Cambio de:
+                    <span class="badge bg-secondary" th:if="${audit.estadoAnterior != null}" th:text="${audit.estadoAnterior}"></span>
+                    <span class="badge bg-secondary" th:if="${audit.estadoAnterior == null}">INICIO</span>
+                    a
+                    <span class="badge bg-success" th:text="${audit.estadoNuevo}"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4">
+
+      <div class="admin-panel-card mb-3">
+        <div class="admin-panel-header">
+          <i class="fas fa-user-shield me-2"></i>Gestión Administrativa
+        </div>
+        <div class="card-body p-3">
+
+          <form th:action="@{/admin/tickets/reasignar}" method="post">
+            <input type="hidden" name="ticketId" th:value="${ticket.id}">
+
+            <div class="mb-4">
+              <label class="form-label small fw-bold text-muted text-uppercase">
+                <i class="fas fa-exchange-alt me-1"></i> Estado del Ticket
+              </label>
+              <select name="estadoId" class="form-select form-select-sm" id="selectEstado">
+                <option th:each="est : ${estados}"
+                        th:value="${est.id}"
+                        th:text="${#strings.replace(est.nombreEstado, '_', ' ')}"
+                        th:selected="${ticket.estadoTicket.id == est.id}"></option>
+              </select>
+              <div id="avisoIngresado" class="form-text text-danger small mt-1" style="display:none;">
+                <i class="fas fa-exclamation-triangle"></i> Al volver a <strong>INGRESADO</strong>, el ticket se reinicia (se borra técnico y fecha cierre).
+              </div>
+            </div>
+
+            <hr class="border-secondary opacity-10">
+
+            <div class="mb-3">
+              <label class="form-label small fw-bold text-muted text-uppercase">
+                <i class="fas fa-user-tag me-1"></i> Técnico Asignado
+              </label>
+              <select name="tecnicoId" class="form-select form-select-sm" id="selectTecnico">
+                <option value="0">-- Sin Asignar (En Bolsa) --</option>
+                <option th:each="tec : ${tecnicos}"
+                        th:value="${tec.id}"
+                        th:text="${tec.nombre} + ' (' + ${tec.email} + ')'"
+                        th:selected="${ticket.tecnicoAsignado != null && ticket.tecnicoAsignado.id == tec.id}"></option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 btn-sm fw-bold py-2">
+              <i class="fas fa-save me-2"></i> Guardar Cambios
+            </button>
+          </form>
+
+        </div>
+      </div>
+
+      <div class="admin-panel-card border-danger">
+        <div class="admin-panel-header bg-danger border-danger">
+          <i class="fas fa-trash-alt me-2"></i>Eliminación
+        </div>
+        <div class="p-3">
+          <p class="small text-muted mb-3">Esta acción borrará el ticket y todo su historial de la base de datos permanentemente.</p>
+          <form th:action="@{/admin/tickets/eliminar}" method="post" onsubmit="return confirm('¿CONFIRMAR ELIMINACIÓN PERMANENTE?');">
+            <input type="hidden" name="ticketId" th:value="${ticket.id}">
+            <button type="submit" class="btn btn-danger w-100 btn-sm fw-bold">
+              <i class="fas fa-times-circle me-1"></i> Eliminar Ticket
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal fade" id="modalImagen" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content bg-transparent border-0">
+      <div class="modal-body text-center">
+        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"></button>
+        <img src="" id="imgPreview" class="img-fluid rounded shadow">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/control-sesion.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // --- SIDEBAR TOGGLE ---
+    const toggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+
+    if(toggle && sidebar && overlay) {
+      toggle.addEventListener('click', (e) => { e.stopPropagation(); sidebar.classList.toggle('active'); overlay.classList.toggle('active'); });
+      overlay.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
+    }
+
+    // --- AVISO VISUAL AL ELEGIR 'INGRESADO' ---
+    const selectEstado = document.getElementById('selectEstado');
+    const avisoIngresado = document.getElementById('avisoIngresado');
+    const selectTecnico = document.getElementById('selectTecnico');
+
+    if (selectEstado) {
+      selectEstado.addEventListener('change', function() {
+        const textoSeleccionado = this.options[this.selectedIndex].text.toUpperCase();
+        if (textoSeleccionado.includes('INGRESADO')) {
+          avisoIngresado.style.display = 'block';
+          selectTecnico.value = "0"; // Auto-seleccionar "Sin Asignar"
+          selectTecnico.disabled = true; // Bloquear para evitar errores
+        } else {
+          avisoIngresado.style.display = 'none';
+          selectTecnico.disabled = false;
+        }
+      });
+    }
+  });
+
+  function verImagen(url) {
+    document.getElementById('imgPreview').src = url;
+    new bootstrap.Modal(document.getElementById('modalImagen')).show();
+  }
+
+  function toggleTema() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-bs-theme');
+    const icon = document.getElementById('themeIcon');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-bs-theme', newTheme);
+    icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    localStorage.setItem('theme', newTheme);
+  }
+
+  (function() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-bs-theme', savedTheme);
+    document.addEventListener('DOMContentLoaded', () => {
+      const icon = document.getElementById('themeIcon');
+      if (icon && savedTheme === 'dark') {
+        icon.className = 'fas fa-sun';
+      }
+    });
+  })();
+</script>
+
+</body>
+</html>

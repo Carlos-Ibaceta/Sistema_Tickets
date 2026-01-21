@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - Municipalidad de Cabildo</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        /* =========================================
+           ESTILOS MUNICIPALES UNIFICADOS
+           ========================================= */
+        :root {
+            --muni-azul: #003366;
+            --muni-azul-dark: #002244;
+            --muni-dorado: #c5a059;
+            --muni-gris-fondo: #f4f6f9;
+            --sidebar-width: 260px;
+        }
+
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--muni-gris-fondo); overflow-x: hidden; }
+
+        /* SIDEBAR */
+        .sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: var(--sidebar-width); background: linear-gradient(180deg, var(--muni-azul) 0%, var(--muni-azul-dark) 100%); color: white; transition: all 0.3s; z-index: 1000; box-shadow: 4px 0 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+        .sidebar-header { padding: 20px; text-align: center; background-color: white; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .logo-img { max-height: 80px; width: auto; }
+        .sidebar-menu { padding: 15px 10px; flex-grow: 1; }
+        .menu-item { margin-bottom: 8px; }
+        .menu-item a, .btn-logout-menu { color: rgba(255,255,255,0.9); text-decoration: none; display: flex; align-items: center; padding: 12px 15px; border-radius: 8px; transition: all 0.2s; font-weight: 500; font-size: 0.95rem; width: 100%; border: none; background: none; text-align: left; cursor: pointer; }
+        .menu-item a:hover, .btn-logout-menu:hover { background-color: rgba(255,255,255,0.1); color: white; transform: translateX(5px); }
+        .menu-item a.active { background-color: var(--muni-dorado); color: var(--muni-azul-dark); font-weight: 700; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .menu-item i, .btn-logout-menu i { width: 25px; text-align: center; margin-right: 10px; }
+        .menu-separator { border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 10px; }
+
+        /* CONTENIDO PRINCIPAL */
+        .main-content { margin-left: var(--sidebar-width); padding: 30px; transition: all 0.3s; min-height: 100vh; }
+
+        /* HEADER DE PÁGINA */
+        .header-section {
+            background: white; border-radius: 12px; padding: 20px 25px; margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid var(--muni-dorado);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .page-title { color: var(--muni-azul); font-weight: 700; margin: 0; }
+
+        /* TARJETA PERFIL */
+        .card-profile { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: none; overflow: hidden; border-top: 4px solid var(--muni-azul); }
+        .profile-header-bg { background-color: #f8f9fa; padding: 30px; text-align: center; border-bottom: 1px solid #e9ecef; }
+        .profile-avatar { width: 100px; height: 100px; background-color: var(--muni-azul); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 15px; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
+        /* FORMULARIOS */
+        .form-label { font-weight: 600; color: var(--muni-azul-dark); font-size: 0.9rem; }
+        .form-control { padding: 12px; border-radius: 8px; border: 1px solid #ced4da; }
+        .form-control:focus { border-color: var(--muni-azul); box-shadow: 0 0 0 0.25rem rgba(0, 51, 102, 0.15); }
+
+        /* BOTONES */
+        .btn-muni { background-color: var(--muni-azul); color: white; border: none; padding: 12px; font-weight: 600; border-radius: 8px; transition: all 0.3s; width: 100%; }
+        .btn-muni:hover { background-color: var(--muni-azul-dark); color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+        .btn-security { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 12px; font-weight: 600; border-radius: 8px; width: 100%; transition: 0.3s; display: flex; align-items: center; justify-content: center; }
+        .btn-security:hover { background-color: #ffecb5; color: #533f03; }
+
+        @media (max-width: 992px) {
+            .sidebar { left: -260px; } .sidebar.active { left: 0; }
+            .main-content { margin-left: 0; padding: 20px; }
+            .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 900; }
+            .overlay.active { display: block; }
+        }
+
+        /* --- MODO OSCURO (CON FIX LOGO) --- */
+        [data-bs-theme="dark"] { --muni-gris-fondo: #212529; }
+
+        /* 1. FIX LOGO */
+        [data-bs-theme="dark"] .sidebar-header {
+            background-color: transparent !important;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        [data-bs-theme="dark"] .logo-img { filter: none; }
+
+        /* 2. Tarjetas y Header */
+        [data-bs-theme="dark"] .card-profile,
+        [data-bs-theme="dark"] .header-section { background-color: #343a40 !important; color: #e0e0e0; border-color: #495057; }
+
+        /* Encabezado Perfil */
+        [data-bs-theme="dark"] .profile-header-bg { background-color: #2c3034 !important; border-bottom-color: #495057; }
+        [data-bs-theme="dark"] .profile-avatar { background-color: #2c3034; border-color: #495057; color: #e0e0e0; }
+
+        /* Textos */
+        [data-bs-theme="dark"] .page-title { color: #e0e0e0; }
+        [data-bs-theme="dark"] .text-dark { color: #e0e0e0 !important; }
+        [data-bs-theme="dark"] .text-muted { color: #adb5bd !important; }
+        [data-bs-theme="dark"] .form-label { color: #e0e0e0; }
+
+        /* Inputs */
+        [data-bs-theme="dark"] .form-control { background-color: #2b3035; border-color: #495057; color: #e0e0e0; }
+
+        /* Botón Seguridad Oscuro */
+        [data-bs-theme="dark"] .btn-security { background-color: #3e3828; color: #ffca2c; border-color: #585030; }
+        [data-bs-theme="dark"] .btn-security:hover { background-color: #4e4632; }
+
+        /* Fondo caja seguridad oscuro */
+        [data-bs-theme="dark"] .bg-light { background-color: #2b3035 !important; border-color: #495057 !important; color: #e0e0e0; }
+    </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <img th:src="@{/img/logo-cabildo.png}" alt="Logo Cabildo" class="logo-img">
+    </div>
+    <div class="sidebar-menu">
+        <div class="menu-item"><a th:href="@{/soporte/dashboard}"><i class="fas fa-home"></i> <span>Panel Principal</span></a></div>
+        <div class="menu-item"><a th:href="@{/soporte/mis-tickets}"><i class="fas fa-tasks"></i> <span>Mis Tickets</span></a></div>
+        <div class="menu-item"><a th:href="@{/soporte/tickets-disponibles}"><i class="fas fa-inbox"></i> <span>Bolsa de Tickets</span></a></div>
+
+        <div class="menu-item" th:if="${session.usuarioKpisHabilitados}">
+            <a th:href="@{/soporte/estadisticas}"><i class="fas fa-chart-line"></i> <span>Estadísticas</span></a>
+        </div>
+
+        <div class="menu-item"><a th:href="@{/soporte/historial}"><i class="fas fa-history"></i> <span>Historial</span></a></div>
+
+        <div class="menu-item"><a th:href="@{/soporte/perfil}" class="active"><i class="fas fa-user-cog"></i> <span>Mi Perfil</span></a></div>
+
+        <div class="menu-item">
+            <button type="button" class="btn-logout-menu text-warning" onclick="toggleTema()">
+                <i class="fas fa-moon" id="themeIcon"></i> <span>Tema</span>
+            </button>
+        </div>
+
+        <div class="menu-separator"></div>
+
+        <div class="menu-item">
+            <form th:action="@{/logout}" method="post">
+                <button class="btn-logout-menu"><i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span></button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="main-content">
+
+    <div class="d-flex align-items-center mb-4 d-lg-none">
+        <button class="btn btn-outline-secondary me-3" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+        <h4 class="m-0 fw-bold text-dark">Mi Cuenta</h4>
+    </div>
+
+    <div class="header-section">
+        <div class="d-flex align-items-center">
+            <div class="bg-light rounded p-3 me-3 text-secondary d-none d-md-block">
+                <i class="fas fa-id-card fa-lg" style="color: var(--muni-azul);"></i>
+            </div>
+            <div>
+                <h3 class="page-title">Mi Perfil Técnico</h3>
+                <p class="mb-0 text-muted small">Administre su información personal y credenciales</p>
+            </div>
+        </div>
+        <a th:href="@{/soporte/dashboard}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left me-2"></i> Volver al Inicio
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+
+            <div th:if="${mensajeExito}" class="alert alert-success alert-dismissible fade show shadow-sm border-start border-success border-4" role="alert">
+                <i class="fas fa-check-circle me-2"></i> <span th:text="${mensajeExito}">Datos actualizados</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show shadow-sm border-start border-danger border-4" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i> <span th:text="${error}">Error</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <div class="card-profile">
+
+                <div class="profile-header-bg">
+                    <div class="profile-avatar">
+                        <span th:text="${usuario.nombre != null ? #strings.substring(usuario.nombre, 0, 1) : 'U'}">U</span>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-1" th:text="${usuario.nombre}">Nombre Usuario</h4>
+                    <span class="badge bg-secondary rounded-pill">Técnico de Soporte</span>
+                </div>
+
+                <div class="p-4">
+                    <form th:action="@{/soporte/perfil/guardar}" th:object="${usuario}" method="post">
+                        <input type="hidden" th:field="*{id}">
+
+                        <div class="mb-3">
+                            <label class="form-label"><i class="fas fa-user me-2 text-muted"></i>Nombre Completo</label>
+                            <input type="text" class="form-control" th:field="*{nombre}" required placeholder="Ingrese su nombre">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label"><i class="fas fa-envelope me-2 text-muted"></i>Correo Electrónico</label>
+                            <input type="email" class="form-control" th:field="*{email}" required placeholder="correo@cabildo.cl">
+                        </div>
+
+                        <div class="mb-4 p-3 bg-light rounded border border-warning">
+                            <label class="form-label fw-bold text-dark small">
+                                <i class="fas fa-lock me-1"></i> CONFIRMAR CONTRASEÑA ACTUAL
+                            </label>
+                            <input type="password" name="passwordActual" class="form-control"
+                                   placeholder="Ingresa tu clave para autorizar cambios" required>
+                            <div class="form-text small text-muted">
+                                Por seguridad, necesitamos verificar tu identidad para actualizar el perfil.
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-muni mb-4">
+                            <i class="fas fa-save me-2"></i> Guardar Cambios
+                        </button>
+                    </form>
+
+                    <div class="border-top pt-4">
+                        <h6 class="fw-bold mb-3 text-dark"><i class="fas fa-shield-alt me-2" style="color: var(--muni-dorado);"></i> Seguridad</h6>
+                        <form th:action="@{/soporte/perfil/cambiar-password}" method="post">
+                            <button type="submit" class="btn btn-security">
+                                <i class="fas fa-key me-2"></i> Solicitar cambio de contraseña
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="/js/control-sesion.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Lógica Sidebar
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        if(toggle && sidebar && overlay) {
+            toggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            });
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+        }
+    });
+
+    // --- MODO OSCURO LOGIC ---
+    function toggleTema() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-bs-theme');
+        const icon = document.getElementById('themeIcon');
+
+        if (currentTheme === 'dark') {
+            html.setAttribute('data-bs-theme', 'light');
+            if(icon) icon.className = 'fas fa-moon';
+            localStorage.setItem('theme', 'light');
+        } else {
+            html.setAttribute('data-bs-theme', 'dark');
+            if(icon) icon.className = 'fas fa-sun';
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
+    (function() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        document.addEventListener('DOMContentLoaded', () => {
+            const icon = document.getElementById('themeIcon');
+            if (icon && savedTheme === 'dark') {
+                icon.className = 'fas fa-sun';
+            }
+        });
+    })();
+</script>
+</body>
+</html>

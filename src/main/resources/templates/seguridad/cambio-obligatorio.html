@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Cambio de Contraseña Requerido</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body { background-color: #f0f2f5; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: 'Segoe UI', sans-serif; }
+        .lock-card { background: white; width: 100%; max-width: 450px; padding: 40px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 5px solid #dc3545; }
+        .lock-icon { font-size: 3rem; color: #dc3545; margin-bottom: 20px; }
+
+        /* REGLAS DE PASSWORD */
+        .password-rules { font-size: 0.8rem; color: #6c757d; list-style: none; padding: 0; margin-top: 10px; text-align: left; }
+        .password-rules li { margin-bottom: 4px; display: flex; align-items: center; }
+        .password-rules li i { width: 15px; margin-right: 5px; }
+        .rule-valid { color: #198754; font-weight: 600; }
+        .rule-invalid { color: #dc3545; }
+
+        /* Botón Deshabilitado */
+        .btn-danger:disabled { background-color: #e9ecef; border-color: #e9ecef; color: #adb5bd; cursor: not-allowed; opacity: 1; }
+
+        /* --- SOLUCIÓN: CÓDIGO PARA QUITAR EL OJO Y CALLAR AL EDITOR --- */
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear { display: none; }
+
+        /* noinspection CssInvalidPseudoSelector */
+        input[type="password"]::-webkit-password-reveal-button {
+            display: none !important;
+            -webkit-appearance: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="lock-card text-center">
+    <div class="lock-icon"><i class="fas fa-user-lock"></i></div>
+    <h3 class="fw-bold text-dark mb-2">Seguridad Primero</h3>
+    <p class="text-muted mb-4">Hola <span class="fw-bold" th:text="${usuario.nombre}">Usuario</span>, por políticas de seguridad debes cambiar tu contraseña temporal.</p>
+
+    <div th:if="${error}" class="alert alert-danger text-start small">
+        <i class="fas fa-exclamation-circle me-1"></i> <span th:text="${error}"></span>
+    </div>
+
+    <form action="/obligatorio/actualizar" method="post" class="text-start">
+        <div class="mb-3">
+            <label class="form-label fw-bold small text-secondary">NUEVA CONTRASEÑA</label>
+            <div class="input-group">
+                <input type="password" id="inputPassword" name="newPassword" class="form-control" placeholder="Crea tu nueva clave" required>
+                <button class="btn btn-outline-secondary bg-white text-muted" type="button" id="togglePassword">
+                    <i class="fas fa-eye"></i>
+                </button>
+            </div>
+
+            <ul class="password-rules mt-3 ps-1">
+                <li id="rule-length"><i class="far fa-circle"></i> Mínimo 8 caracteres</li>
+                <li id="rule-upper"><i class="far fa-circle"></i> Al menos una mayúscula (A-Z)</li>
+                <li id="rule-number"><i class="far fa-circle"></i> Al menos un número (0-9)</li>
+                <li id="rule-symbol"><i class="far fa-circle"></i> Un símbolo (@, #, $, %, etc.)</li>
+            </ul>
+        </div>
+
+        <button type="submit" id="btnSubmit" class="btn btn-danger w-100 fw-bold py-2" disabled>
+            <i class="fas fa-save me-2"></i> ACTUALIZAR Y ENTRAR
+        </button>
+    </form>
+
+    <div class="mt-4 border-top pt-3">
+        <form th:action="@{/logout}" method="post">
+            <button class="btn btn-link text-muted text-decoration-none small">Cancelar y Cerrar Sesión</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // 1. Mostrar / Ocultar Contraseña
+    const togglePassword = document.querySelector('#togglePassword');
+    const password = document.querySelector('#inputPassword');
+    const icon = togglePassword.querySelector('i');
+
+    togglePassword.addEventListener('click', function (e) {
+        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+        password.setAttribute('type', type);
+        icon.classList.toggle('fa-eye');
+        icon.classList.toggle('fa-eye-slash');
+    });
+
+    // 2. Validación en Tiempo Real
+    const input = document.getElementById('inputPassword');
+    const btnSubmit = document.getElementById('btnSubmit');
+
+    const ruleLength = document.getElementById('rule-length');
+    const ruleUpper = document.getElementById('rule-upper');
+    const ruleNumber = document.getElementById('rule-number');
+    const ruleSymbol = document.getElementById('rule-symbol');
+
+    input.addEventListener('input', function() {
+        const val = input.value;
+        let isValid = true;
+
+        if (val.length >= 8) { setValid(ruleLength, true); } else { setValid(ruleLength, false); isValid = false; }
+        if (/[A-Z]/.test(val)) { setValid(ruleUpper, true); } else { setValid(ruleUpper, false); isValid = false; }
+        if (/[0-9]/.test(val)) { setValid(ruleNumber, true); } else { setValid(ruleNumber, false); isValid = false; }
+        if (/[@#$%^&+=!._\-]/.test(val)) { setValid(ruleSymbol, true); } else { setValid(ruleSymbol, false); isValid = false; }
+
+        btnSubmit.disabled = !isValid;
+    });
+
+    function setValid(element, valid) {
+        const icon = element.querySelector('i');
+        if (valid) {
+            element.classList.add('rule-valid');
+            element.classList.remove('rule-invalid');
+            icon.className = 'fas fa-check-circle';
+        } else {
+            element.classList.remove('rule-valid');
+            icon.className = 'far fa-circle';
+        }
+    }
+</script>
+
+</body>
+</html>

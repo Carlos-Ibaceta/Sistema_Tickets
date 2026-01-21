@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Historial Global - Municipalidad de Cabildo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        :root {
+            --muni-azul: #003366;
+            --muni-azul-dark: #002244;
+            --muni-dorado: #c5a059;
+            --bg-gris: #f4f6f9;
+            --sidebar-width: 260px;
+        }
+
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-gris); overflow-x: hidden; }
+
+        /* SIDEBAR */
+        .sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: var(--sidebar-width); background: linear-gradient(180deg, var(--muni-azul) 0%, var(--muni-azul-dark) 100%); color: white; transition: all 0.3s; z-index: 1000; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
+        .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); background-color: white; }
+        .logo-img { max-height: 80px; width: auto; }
+        .sidebar-menu { padding: 15px 10px; }
+        .menu-item { margin-bottom: 8px; }
+        .menu-item a { color: rgba(255,255,255,0.8); text-decoration: none; display: flex; align-items: center; padding: 12px 15px; border-radius: 8px; transition: all 0.2s; font-weight: 500; font-size: 0.95rem; }
+        .menu-item a:hover { background-color: rgba(255,255,255,0.1); color: white; transform: translateX(5px); }
+        .menu-item a.active { background-color: var(--muni-dorado); color: var(--muni-azul-dark); font-weight: 700; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .menu-item i { width: 25px; text-align: center; margin-right: 10px; }
+
+        /* MAIN CONTENT */
+        .main-content { margin-left: var(--sidebar-width); padding: 30px; transition: all 0.3s; min-height: 100vh; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; background: white; padding: 20px 25px; border-radius: 10px; border-left: 5px solid #6c757d; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .page-title { font-size: 1.5rem; font-weight: 700; color: var(--muni-azul); margin: 0; }
+
+        /* FILTER BAR */
+        .filter-bar { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        .filter-label { font-weight: 700; color: var(--muni-azul); font-size: 0.85rem; margin-bottom: 5px; display: block; }
+        .form-select-custom { border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px; font-size: 0.9rem; }
+
+        /* TABLE */
+        .content-card { background: white; border-radius: 10px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .table-custom thead th { background-color: #6c757d; color: white; border: none; padding: 15px; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; }
+        .table-custom tbody td { vertical-align: middle; padding: 15px; border-bottom: 1px solid #f0f0f0; color: #444; }
+
+        /* BADGES */
+        .badge-pill { padding: 6px 12px; border-radius: 50px; font-weight: 600; font-size: 0.75rem; }
+
+        /* ESTADOS FINALES */
+        .badge-resuelto { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+        .badge-cancelado { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+        .badge-escalado { background-color: #fff3e0; color: #ef6c00; border: 1px solid #ffe0b2; }
+        .badge-no-resuelto { background-color: #f3e5f5; color: #7b1fa2; border: 1px solid #e1bee7; }
+
+        .tech-avatar { width: 30px; height: 30px; background-color: #6c757d; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; margin-right: 8px; }
+
+        .btn-action { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; border: none; transition: all 0.2s; }
+        .btn-view { background-color: #e3f2fd; color: var(--muni-azul); }
+        .btn-view:hover { background-color: var(--muni-azul); color: white; }
+        .btn-delete { background-color: #ffebee; color: #c62828; }
+        .btn-delete:hover { background-color: #c62828; color: white; }
+
+        /* PAGINACIÓN */
+        .pagination .page-link { color: var(--muni-azul); border: none; margin: 0 3px; border-radius: 5px; font-weight: 600; }
+        .pagination .page-link:hover { background-color: #e9ecef; color: var(--muni-azul-dark); }
+        .pagination .page-item.active .page-link { background-color: var(--muni-azul); color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .pagination .page-item.disabled .page-link { color: #ccc; background-color: transparent; }
+
+        @media (max-width: 992px) {
+            .sidebar { left: -260px; } .sidebar.active { left: 0; }
+            .main-content { margin-left: 0; padding: 15px; }
+            .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 900; }
+            .overlay.active { display: block; }
+        }
+
+        /* --- MODO OSCURO --- */
+        [data-bs-theme="dark"] { --bg-gris: #212529; }
+        [data-bs-theme="dark"] .sidebar-header { background-color: transparent !important; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        [data-bs-theme="dark"] .logo-img { filter: none; }
+        [data-bs-theme="dark"] .page-header, [data-bs-theme="dark"] .filter-bar, [data-bs-theme="dark"] .content-card { background-color: #343a40 !important; color: #e0e0e0; border-color: #495057; }
+        [data-bs-theme="dark"] .page-title { color: #e0e0e0; }
+        [data-bs-theme="dark"] .filter-label { color: #6ea8fe; }
+        [data-bs-theme="dark"] .text-secondary { color: #adb5bd !important; }
+        [data-bs-theme="dark"] .form-select-custom { background-color: #2b3035; border-color: #495057; color: #e0e0e0; }
+        [data-bs-theme="dark"] .table-custom thead th { background-color: #2c3034; color: #e0e0e0; border-bottom-color: #495057; }
+        [data-bs-theme="dark"] .table-custom tbody td { color: #cfd2d6; border-bottom-color: #495057; }
+        [data-bs-theme="dark"] .table-custom tbody tr:hover { background-color: #3e444a; }
+        [data-bs-theme="dark"] .pagination .page-link { background-color: #343a40; border-color: #495057; color: #e0e0e0; }
+        [data-bs-theme="dark"] .pagination .page-item.active .page-link { background-color: var(--muni-azul); color: white; }
+    </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <img th:src="@{/img/logo-cabildo.png}" alt="Logo Cabildo" class="logo-img">
+    </div>
+
+    <div class="sidebar-menu">
+        <div class="menu-item">
+            <a th:href="@{/admin/dashboard}">
+                <i class="fas fa-chart-pie"></i> <span>Panel de Control</span>
+            </a>
+        </div>
+        <div class="menu-item">
+            <a th:href="@{/admin/usuarios}">
+                <i class="fas fa-users-cog"></i> <span>Gestión Usuarios</span>
+            </a>
+        </div>
+        <div class="menu-item">
+            <a th:href="@{/admin/tickets-globales}" class="active">
+                <i class="fas fa-list-alt"></i> <span>Tickets Globales</span>
+            </a>
+        </div>
+        <div class="menu-item">
+            <a th:href="@{/reportes}">
+                <i class="fas fa-file-invoice"></i> <span>Reportes PDF</span>
+            </a>
+        </div>
+        <div class="menu-item">
+            <a th:href="@{/admin/configuracion}">
+                <i class="fas fa-sliders-h"></i> <span>Configuración</span>
+            </a>
+        </div>
+        <div class="menu-item">
+            <a th:href="@{/admin/perfil}">
+                <i class="fas fa-user-edit"></i> <span>Mi Perfil</span>
+            </a>
+        </div>
+
+        <div class="menu-item">
+            <button type="button" class="btn w-100 text-start text-white p-0 d-flex align-items-center bg-transparent border-0"
+                    style="padding: 12px 15px !important;" onclick="toggleTema()">
+                <i class="fas fa-moon text-warning" id="themeIcon" style="width: 25px; margin-right: 10px;"></i>
+                <span class="fw-bold" style="font-size: 0.95rem;">Tema</span>
+            </button>
+        </div>
+
+        <div class="menu-item mt-5">
+            <form th:action="@{/logout}" method="post">
+                <button class="btn w-100 text-start text-white p-0 d-flex align-items-center bg-transparent border-0" style="padding-left: 15px !important;">
+                    <i class="fas fa-sign-out-alt" style="width: 25px; margin-right: 10px;"></i>
+                    <span>Cerrar Sesión</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="page-header">
+        <div>
+            <div class="d-flex align-items-center">
+                <button class="btn btn-outline-secondary d-lg-none me-3" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+                <h2 class="page-title"><i class="fas fa-archive me-2"></i>Historial Global</h2>
+            </div>
+            <p class="text-muted mb-0 ms-lg-0 ms-5 ps-lg-0 ps-3">Archivo de incidencias finalizadas o cerradas</p>
+        </div>
+        <div>
+            <a th:href="@{/admin/tickets-globales}" class="btn btn-primary fw-bold shadow-sm" style="background-color: var(--muni-azul);">
+                <i class="fas fa-arrow-left me-2"></i> Volver a Tickets Activos
+            </a>
+        </div>
+    </div>
+
+    <div class="filter-bar">
+        <form th:action="@{/admin/historial-global}" method="get">
+            <div class="row align-items-end">
+                <div class="col-md-3">
+                    <label class="filter-label"><i class="fas fa-building me-1"></i> Departamento</label>
+                    <select class="form-select form-select-custom" name="departamentoId">
+                        <option value="">-- Todos --</option>
+                        <option th:each="d : ${departamentos}"
+                                th:value="${d.id}"
+                                th:text="${d.nombre}"
+                                th:selected="${selectedDepto == d.id}"></option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="filter-label"><i class="fas fa-flag me-1"></i> Prioridad</label>
+                    <select class="form-select form-select-custom" name="prioridadId">
+                        <option value="">-- Todos --</option>
+                        <option th:each="p : ${prioridades}"
+                                th:value="${p.id}"
+                                th:text="${p.nivelPrioridad}"
+                                th:selected="${selectedPrio == p.id}"></option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="filter-label"><i class="fas fa-sort me-1"></i> Orden</label>
+                    <select class="form-select form-select-custom" name="orden">
+                        <option value="recientes" th:selected="${selectedOrden == 'recientes'}">Más Recientes</option>
+                        <option value="antiguos" th:selected="${selectedOrden == 'antiguos'}">Más Antiguos</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100 fw-bold" style="background-color: var(--muni-azul); border:none; padding: 10px;">
+                        <i class="fas fa-filter me-2"></i> Filtrar
+                    </button>
+                    <a href="/admin/historial-global" class="btn btn-light border w-auto" title="Limpiar">
+                        <i class="fas fa-undo"></i>
+                    </a>
+                </div>
+
+            </div>
+        </form>
+    </div>
+
+    <div class="content-card">
+        <div class="table-responsive">
+            <table class="table table-custom table-hover">
+                <thead>
+                <tr>
+                    <th>Folio</th>
+                    <th>Asunto</th>
+                    <th>Solicitante</th>
+                    <th>Fecha Creación</th>
+                    <th>Fecha Cierre</th>
+                    <th>Estado</th>
+                    <th>Técnico</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${tickets.totalElements == 0}">
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        <p class="mb-0">No hay tickets en el historial.</p>
+                    </td>
+                </tr>
+
+                <tr th:each="t : ${tickets}">
+                    <td class="fw-bold text-secondary" th:text="'#' + ${t.id}"></td>
+
+                    <td th:text="${t.asunto}"></td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-user text-secondary me-2 small"></i>
+                            <span th:text="${t.usuario.nombre}"></span>
+                        </div>
+                    </td>
+                    <td class="small text-muted" th:text="${t.fechaCreacion != null ? #temporals.format(t.fechaCreacion, 'dd/MM/yyyy HH:mm') : '-'}"></td>
+                    <td class="small text-muted" th:text="${t.fechaCierre != null ? #temporals.format(t.fechaCierre, 'dd/MM/yyyy HH:mm') : '-'}"></td>
+
+                    <td>
+                        <span th:if="${t.estadoTicket != null}"
+                              class="badge badge-pill"
+                              th:classappend="${t.estadoTicket.nombreEstado == 'RESUELTO' ? 'badge-resuelto' :
+                                              (t.estadoTicket.nombreEstado == 'CANCELADO' ? 'badge-cancelado' :
+                                              (t.estadoTicket.nombreEstado == 'ESCALADO' ? 'badge-escalado' : 'badge-no-resuelto'))}"
+                              th:text="${#strings.replace(t.estadoTicket.nombreEstado, '_', ' ')}">
+                        </span>
+                    </td>
+
+                    <td>
+                        <div class="d-flex align-items-center" th:if="${t.tecnicoAsignado != null}">
+                            <div class="tech-avatar" th:text="${#strings.substring(t.tecnicoAsignado.nombre, 0, 1)}">T</div>
+                            <small th:text="${t.tecnicoAsignado.nombre}"></small>
+                        </div>
+                        <div class="d-flex align-items-center" th:if="${t.tecnicoAsignado == null}">
+                            <div class="tech-avatar unassigned-avatar"><i class="fas fa-minus"></i></div>
+                            <small class="text-muted">N/A</small>
+                        </div>
+                    </td>
+                    <td class="text-end">
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a th:href="@{/admin/tickets/{id}(id=${t.id})}" class="btn-action btn-view" title="Ver Detalle"><i class="fas fa-eye"></i></a>
+                            <a th:href="@{/admin/tickets/eliminar/{id}(id=${t.id})}" class="btn-action btn-delete" title="Eliminar del Historial" onclick="return confirm('¿Eliminar permanentemente?');"><i class="fas fa-trash-alt"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <nav aria-label="Navegación de tickets" class="mt-4 pb-3" th:if="${tickets.totalPages > 1}">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${tickets.first} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/admin/historial-global(page=${tickets.number - 1}, departamentoId=${selectedDepto}, prioridadId=${selectedPrio}, orden=${selectedOrden})}"
+                       tabindex="-1"><i class="fas fa-chevron-left"></i> Anterior</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, tickets.totalPages - 1)}"
+                    th:classappend="${i == tickets.number} ? 'active'"
+                    th:if="${i >= tickets.number - 2 and i <= tickets.number + 2}">
+                    <a class="page-link"
+                       th:href="@{/admin/historial-global(page=${i}, departamentoId=${selectedDepto}, prioridadId=${selectedPrio}, orden=${selectedOrden})}"
+                       th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${tickets.last} ? 'disabled'">
+                    <a class="page-link"
+                       th:href="@{/admin/historial-global(page=${tickets.number + 1}, departamentoId=${selectedDepto}, prioridadId=${selectedPrio}, orden=${selectedOrden})}">
+                        Siguiente <i class="fas fa-chevron-right"></i></a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<script src="/js/control-sesion.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Lógica Sidebar
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        if(toggle && sidebar && overlay) {
+            toggle.addEventListener('click', (e) => { e.stopPropagation(); sidebar.classList.toggle('active'); overlay.classList.toggle('active'); });
+            overlay.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
+        }
+    });
+
+    // MODO OSCURO
+    function toggleTema() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-bs-theme');
+        const icon = document.getElementById('themeIcon');
+        if (currentTheme === 'dark') {
+            html.setAttribute('data-bs-theme', 'light');
+            if(icon) icon.className = 'fas fa-moon text-warning';
+            localStorage.setItem('theme', 'light');
+        } else {
+            html.setAttribute('data-bs-theme', 'dark');
+            if(icon) icon.className = 'fas fa-sun text-warning';
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+    (function() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        document.addEventListener('DOMContentLoaded', () => {
+            const icon = document.getElementById('themeIcon');
+            if (icon && savedTheme === 'dark') { icon.className = 'fas fa-sun text-warning'; }
+        });
+    })();
+</script>
+</body>
+</html>

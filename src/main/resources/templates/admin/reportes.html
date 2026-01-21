@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Centro de Reportes - Municipalidad de Cabildo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        :root {
+            --muni-azul: #003366;
+            --muni-azul-dark: #002244;
+            --muni-dorado: #c5a059;
+            --bg-gris: #f4f6f9;
+            --sidebar-width: 260px;
+        }
+
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-gris); overflow-x: hidden; }
+
+        /* --- SIDEBAR --- */
+        .sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: var(--sidebar-width); background: linear-gradient(180deg, var(--muni-azul) 0%, var(--muni-azul-dark) 100%); color: white; transition: all 0.3s; z-index: 1000; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
+        .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); background-color: white; }
+        .logo-img { max-height: 80px; width: auto; }
+        .sidebar-menu { padding: 15px 10px; }
+        .menu-item { margin-bottom: 8px; }
+        .menu-item a { color: rgba(255,255,255,0.8); text-decoration: none; display: flex; align-items: center; padding: 12px 15px; border-radius: 8px; transition: all 0.2s; font-weight: 500; font-size: 0.95rem; }
+        .menu-item a:hover { background-color: rgba(255,255,255,0.1); color: white; transform: translateX(5px); }
+        .menu-item a.active { background-color: var(--muni-dorado); color: var(--muni-azul-dark); font-weight: 700; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .menu-item i { width: 25px; text-align: center; margin-right: 10px; }
+
+        /* MAIN CONTENT */
+        .main-content { margin-left: var(--sidebar-width); padding: 30px; transition: all 0.3s; min-height: 100vh; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; background: white; padding: 20px 25px; border-radius: 10px; border-left: 5px solid var(--muni-dorado); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .page-title { font-size: 1.5rem; font-weight: 700; color: var(--muni-azul); margin: 0; }
+
+        /* CARDS */
+        .stat-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); height: 100%; transition: transform 0.3s; border-bottom: 3px solid transparent; }
+        .stat-card:hover { transform: translateY(-5px); border-bottom-color: var(--muni-azul); }
+        .stat-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 15px; }
+
+        .icon-blue { background-color: #e3f2fd; color: var(--muni-azul); }
+        .icon-green { background-color: #e8f5e9; color: #2e7d32; }
+        .icon-orange { background-color: #fff3e0; color: #ef6c00; }
+        .icon-purple { background-color: #f3e5f5; color: #7b1fa2; }
+        .stat-value { font-size: 2rem; font-weight: 700; color: #333; line-height: 1; }
+        .stat-label { color: #666; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; margin-top: 5px; }
+
+        /* FILTER CARD */
+        .filter-card { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 4px solid var(--muni-azul); margin-bottom: 30px; }
+        .form-label { font-weight: 700; font-size: 0.85rem; color: var(--muni-azul); text-transform: uppercase; margin-bottom: 8px; }
+
+        @media (max-width: 992px) {
+            .sidebar { left: -260px; } .sidebar.active { left: 0; }
+            .main-content { margin-left: 0; padding: 15px; }
+            .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 900; }
+            .overlay.active { display: block; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+        }
+
+        /* --- MODO OSCURO (CON FIX LOGO) --- */
+        [data-bs-theme="dark"] { --bg-gris: #212529; }
+        [data-bs-theme="dark"] .sidebar-header { background-color: transparent !important; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        [data-bs-theme="dark"] .logo-img { filter: none; }
+        [data-bs-theme="dark"] .page-header, [data-bs-theme="dark"] .filter-card, [data-bs-theme="dark"] .stat-card { background-color: #343a40 !important; color: #e0e0e0; border-color: #495057; }
+        [data-bs-theme="dark"] .page-title { color: #e0e0e0; }
+        [data-bs-theme="dark"] .text-dark { color: #e0e0e0 !important; }
+        [data-bs-theme="dark"] .text-muted { color: #adb5bd !important; }
+        [data-bs-theme="dark"] .icon-blue { background-color: rgba(13, 110, 253, 0.2); color: #6ea8fe; }
+        [data-bs-theme="dark"] .icon-green { background-color: rgba(25, 135, 84, 0.2); color: #75b798; }
+        [data-bs-theme="dark"] .icon-orange { background-color: rgba(255, 193, 7, 0.2); color: #ffda6a; }
+        [data-bs-theme="dark"] .icon-purple { background-color: rgba(111, 66, 193, 0.2); color: #d63384; }
+        [data-bs-theme="dark"] .stat-value { color: #e0e0e0; }
+        [data-bs-theme="dark"] .stat-label { color: #adb5bd; }
+        [data-bs-theme="dark"] .form-label { color: #6ea8fe; }
+        [data-bs-theme="dark"] .form-select, [data-bs-theme="dark"] .form-control { background-color: #2b3035; border-color: #495057; color: #e0e0e0; }
+    </style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <img th:src="@{/img/logo-cabildo.png}" alt="Logo Cabildo" class="logo-img">
+    </div>
+
+    <div class="sidebar-menu">
+        <div class="menu-item"><a th:href="@{/admin/dashboard}"><i class="fas fa-chart-pie"></i> <span>Panel de Control</span></a></div>
+        <div class="menu-item"><a th:href="@{/admin/usuarios}"><i class="fas fa-users-cog"></i> <span>Gestión Usuarios</span></a></div>
+        <div class="menu-item"><a th:href="@{/admin/tickets-globales}"><i class="fas fa-list-alt"></i> <span>Tickets Globales</span></a></div>
+        <div class="menu-item"><a th:href="@{/reportes}" class="active"><i class="fas fa-file-invoice"></i> <span>Reportes PDF</span></a></div>
+        <div class="menu-item"><a th:href="@{/admin/configuracion}"><i class="fas fa-sliders-h"></i> <span>Configuración</span></a></div>
+        <div class="menu-item"><a th:href="@{/admin/perfil}"><i class="fas fa-user-edit"></i> <span>Mi Perfil</span></a></div>
+
+        <div class="menu-item">
+            <button type="button" class="btn w-100 text-start text-white p-0 d-flex align-items-center bg-transparent border-0"
+                    style="padding: 12px 15px !important;" onclick="toggleTema()">
+                <i class="fas fa-moon text-warning" id="themeIcon" style="width: 25px; margin-right: 10px;"></i>
+                <span class="fw-bold" style="font-size: 0.95rem;">Tema</span>
+            </button>
+        </div>
+
+        <div class="menu-item mt-5">
+            <form th:action="@{/logout}" method="post">
+                <button class="btn w-100 text-start text-white p-0 d-flex align-items-center bg-transparent border-0" style="padding-left: 15px !important;">
+                    <i class="fas fa-sign-out-alt" style="width: 25px; margin-right: 10px;"></i> <span>Cerrar Sesión</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="main-content">
+
+    <div class="page-header">
+        <div>
+            <div class="d-flex align-items-center">
+                <button class="btn btn-outline-secondary d-lg-none me-3" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+                <h2 class="page-title"><i class="fas fa-print me-2"></i>Centro de Reportes</h2>
+            </div>
+            <p class="text-muted mb-0 ms-lg-0 ms-5 ps-lg-0 ps-3">Generación de informes con filtros avanzados</p>
+        </div>
+        <div class="d-none d-md-block text-end">
+            <div class="small text-muted">Usuario Actual</div>
+            <div class="fw-bold text-dark" th:text="${usuarioNombre != null ? usuarioNombre : 'Administrador'}">Admin</div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card">
+                <div class="stat-icon icon-blue"><i class="fas fa-filter"></i></div>
+                <div class="stat-value" th:text="${totalTickets}">0</div>
+                <div class="stat-label">Total Filtrados</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card">
+                <div class="stat-icon icon-green"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-value" th:text="${ticketsResueltos}">0</div>
+                <div class="stat-label">Resueltos</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card">
+                <div class="stat-icon icon-orange"><i class="fas fa-clock"></i></div>
+                <div class="stat-value" th:text="${ticketsAbiertos}">0</div>
+                <div class="stat-label">Pendientes</div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="stat-card">
+                <div class="stat-icon icon-purple"><i class="fas fa-percentage"></i></div>
+                <div class="stat-value" th:text="${tasaResolucion + '%'}">0%</div>
+                <div class="stat-label">Eficacia</div>
+            </div>
+        </div>
+    </div>
+
+    <h5 class="fw-bold text-dark mb-4 ps-1 border-start border-4 border-primary ps-3">Filtros y Exportación</h5>
+
+    <div class="filter-card">
+        <form th:action="@{/reportes}" method="get" class="row g-3 align-items-end">
+
+            <div class="col-md-2">
+                <label class="form-label"><i class="fas fa-calendar me-1"></i> Desde</label>
+                <input type="date" name="fechaInicio" class="form-control" th:value="${fechaInicio}">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label"><i class="fas fa-calendar me-1"></i> Hasta</label>
+                <input type="date" name="fechaFin" class="form-control" th:value="${fechaFin}">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label"><i class="fas fa-building me-1"></i> Depto</label>
+                <select name="departamentoId" class="form-select">
+                    <option value="">-- Todos --</option>
+                    <option th:each="d : ${departamentos}" th:value="${d.id}" th:text="${d.nombreDepartamento}"
+                            th:selected="${departamentoId == d.id}"></option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label"><i class="fas fa-flag me-1"></i> Prioridad</label>
+                <select name="prioridadId" class="form-select">
+                    <option value="">-- Todas --</option>
+                    <option th:each="p : ${prioridades}" th:value="${p.id}" th:text="${p.nivelPrioridad}"
+                            th:selected="${prioridadId == p.id}"></option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label"><i class="fas fa-sort me-1"></i> Orden</label>
+                <select name="ordenFecha" class="form-select">
+                    <option value="DESC" th:selected="${ordenFecha == 'DESC'}">Más Recientes</option>
+                    <option value="ASC" th:selected="${ordenFecha == 'ASC'}">Más Antiguos</option>
+                    <option value="PRIO_ALTA" th:selected="${ordenFecha == 'PRIO_ALTA'}">Prioridad (Alta a Baja)</option>
+                    <option value="PRIO_BAJA" th:selected="${ordenFecha == 'PRIO_BAJA'}">Prioridad (Baja a Alta)</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm" title="Aplicar Filtros">
+                        <i class="fas fa-calculator"></i>
+                    </button>
+                    <button type="submit" th:formaction="@{/reportes/excel}" class="btn btn-success w-100 fw-bold shadow-sm" title="Excel">
+                        <i class="fas fa-file-excel"></i>
+                    </button>
+                    <button type="submit" th:formaction="@{/reportes/pdf}" class="btn btn-danger w-100 fw-bold shadow-sm" title="PDF">
+                        <i class="fas fa-file-pdf"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="/js/control-sesion.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+
+        if(toggle && sidebar && overlay) {
+            toggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            });
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+        }
+    });
+
+    function toggleTema() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-bs-theme');
+        const icon = document.getElementById('themeIcon');
+
+        if (currentTheme === 'dark') {
+            html.setAttribute('data-bs-theme', 'light');
+            if(icon) icon.className = 'fas fa-moon text-warning';
+            localStorage.setItem('theme', 'light');
+        } else {
+            html.setAttribute('data-bs-theme', 'dark');
+            if(icon) icon.className = 'fas fa-sun text-warning';
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
+    (function() {
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-bs-theme', savedTheme);
+        document.addEventListener('DOMContentLoaded', () => {
+            const icon = document.getElementById('themeIcon');
+            if (icon && savedTheme === 'dark') {
+                icon.className = 'fas fa-sun text-warning';
+            }
+        });
+    })();
+</script>
+</body>
+</html>

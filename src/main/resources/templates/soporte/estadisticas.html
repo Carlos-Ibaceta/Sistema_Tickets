@@ -7,7 +7,6 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <style>
-    /* ... Tus estilos CSS (Copialos del archivo anterior) ... */
     :root { --muni-azul: #003366; --muni-azul-dark: #002244; --muni-dorado: #c5a059; --bg-gris: #f4f6f9; --sidebar-width: 260px; }
     body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-gris); overflow-x: hidden; }
     .sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: var(--sidebar-width); background: linear-gradient(180deg, var(--muni-azul) 0%, var(--muni-azul-dark) 100%); color: white; transition: all 0.3s; z-index: 1000; box-shadow: 4px 0 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
@@ -191,35 +190,23 @@
             </tr>
             </thead>
             <tbody>
-            <tr>
-              <td><i class="fas fa-microchip me-2 text-muted"></i> Hardware</td>
-              <td class="fw-bold text-center" th:text="${hardware ?: 0}">0</td>
+            <tr th:each="stat, statStat : ${categoriasStats}">
+              <td>
+                <i class="fas fa-folder me-2 text-muted"></i>
+                <span th:text="${stat[0]}">Nombre Categoria</span>
+              </td>
+              <td class="fw-bold text-center" th:text="${stat[1]}">0</td>
               <td style="width: 40%; vertical-align: middle;">
                 <div class="progress progress-thin">
-                  <div class="progress-bar" style="background-color: var(--muni-azul);"
-                       th:style="'width: ' + (${total} > 0 ? ((${hardware} ?: 0) * 100 / ${total}) : 0) + '%'"></div>
+                  <div class="progress-bar"
+                       th:classappend="${statStat.index % 3 == 0 ? 'bg-primary' : (statStat.index % 3 == 1 ? 'bg-success' : 'bg-info')}"
+                       th:style="'width: ' + (${totalCategorias} > 0 ? ((${stat[1]} * 100.0) / ${totalCategorias}) : 0) + '%'">
+                  </div>
                 </div>
               </td>
             </tr>
-            <tr>
-              <td><i class="fas fa-laptop-code me-2 text-muted"></i> Software</td>
-              <td class="fw-bold text-center" th:text="${software ?: 0}">0</td>
-              <td>
-                <div class="progress progress-thin">
-                  <div class="progress-bar bg-success"
-                       th:style="'width: ' + (${total} > 0 ? ((${software} ?: 0) * 100 / ${total}) : 0) + '%'"></div>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td><i class="fas fa-network-wired me-2 text-muted"></i> Redes</td>
-              <td class="fw-bold text-center" th:text="${redes ?: 0}">0</td>
-              <td>
-                <div class="progress progress-thin">
-                  <div class="progress-bar bg-info"
-                       th:style="'width: ' + (${total} > 0 ? ((${redes} ?: 0) * 100 / ${total}) : 0) + '%'"></div>
-                </div>
-              </td>
+            <tr th:if="${#lists.isEmpty(categoriasStats)}">
+              <td colspan="3" class="text-center text-muted py-3">No hay datos de categorías aún.</td>
             </tr>
             </tbody>
           </table>
@@ -229,7 +216,7 @@
   </div>
 </div>
 
-<script src="/js/control-sesion.js"></script>
+<script th:src="@{/js/control-sesion.js}"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', () => {

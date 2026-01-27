@@ -3,8 +3,8 @@
    ========================================== */
 
 // Configuración: Tiempo en milisegundos
-// 30 minutos = 1800000 ms
-// Para pruebas ponle 305000 (5 min y 5 seg)
+// 20 minutos = 1200000 ms
+// El JS saltará a los 20 min, ganándole al servidor (que espera 25 min)
 const TIEMPO_LIMITE = 20 * 60 * 1000;
 
 let temporizador;
@@ -13,13 +13,17 @@ function reiniciarConteo() {
     // Si el usuario mueve el mouse o teclea, reiniciamos la cuenta regresiva
     clearTimeout(temporizador);
     temporizador = setTimeout(cerrarSesionPorInactividad, TIEMPO_LIMITE);
-
-    // Opcional: Para depurar en consola y ver que funciona
-    // console.log("Actividad detectada. Temporizador reiniciado.");
 }
 
 function cerrarSesionPorInactividad() {
-    // Redirigir al login forzando el logout
+    console.log("Inactividad detectada. Cerrando sesión...");
+
+    // --- CORRECCIÓN FINAL ---
+    // Usamos ruta relativa. Esto funciona automáticamente en:
+    // - localhost:8080
+    // - localhost (puerto 80)
+    // - 192.168.x.x
+    // - http://gestion-tickets
     window.location.href = '/login?logout=true&motivo=inactividad';
 }
 

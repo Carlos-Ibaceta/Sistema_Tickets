@@ -5,6 +5,8 @@ import com.example.system_tickets.repository.*;
 import com.example.system_tickets.service.DropdownService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -27,9 +29,12 @@ public class DropdownServiceImpl implements DropdownService {
 
     @Override
     public List<EstadoTicket> listarEstadosCierre() {
-        return List.of(
-                er.findByNombreEstado("RESUELTO").get(),
-                er.findByNombreEstado("CANCELADO").get()
-        );
+        // CORRECCIÓN: Uso seguro de Optional para evitar errores si no existe el estado
+        List<EstadoTicket> estadosFinales = new ArrayList<>();
+
+        er.findByNombreEstado("RESUELTO").ifPresent(estadosFinales::add);
+        er.findByNombreEstado("CANCELADO").ifPresent(estadosFinales::add);
+
+        return estadosFinales;
     }
 }

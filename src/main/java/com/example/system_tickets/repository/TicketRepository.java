@@ -6,8 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query; // <--- NUEVO IMPORT
-import org.springframework.data.repository.query.Param; // <--- NUEVO IMPORT
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -27,7 +27,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long>, JpaSpecif
     // Para Soporte: Bolsa de Tickets paginada
     Page<Ticket> findByTecnicoAsignadoIsNull(Pageable pageable);
 
-    // Para Soporte: Historial antiguo (puede borrarse si ya no se usa, pero lo dejo por si acaso)
+    // Para Soporte: Historial antiguo
     Page<Ticket> findByTecnicoAsignadoAndEstadoTicket_NombreEstadoIn(Usuario tecnico, Collection<String> estados, Pageable pageable);
 
     // --- NUEVO MÉTODO BLINDADO PARA HISTORIAL (SOLUCIÓN) ---
@@ -46,4 +46,9 @@ public interface TicketRepository extends JpaRepository<Ticket, Long>, JpaSpecif
     List<Ticket> findByTecnicoAsignadoIsNull();
     List<Ticket> findAllByOrderByFechaCreacionDesc();
     List<Ticket> findAllByOrderByFechaCreacionAsc();
+
+    // --- NUEVO: ESTADÍSTICAS POR CATEGORÍA ---
+    // Esta es la consulta que faltaba para arreglar el gráfico
+    @Query("SELECT c.nombreCategoria, COUNT(t) FROM Ticket t JOIN t.categoria c GROUP BY c.nombreCategoria")
+    List<Object[]> contarTicketsPorCategoria();
 }

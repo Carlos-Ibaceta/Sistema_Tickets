@@ -3,6 +3,7 @@ package com.example.system_tickets.controller;
 import com.example.system_tickets.entity.*;
 import com.example.system_tickets.repository.*;
 import com.example.system_tickets.service.DropdownService;
+import com.example.system_tickets.service.EmailService;
 import com.example.system_tickets.service.UsuarioService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.persistence.criteria.Predicate;
@@ -41,14 +42,13 @@ public class AdminController {
     @Autowired private JavaMailSender mailSender;
     @Autowired private PasswordEncoder passwordEncoder;
     @Autowired private DropdownService dropdownService;
+    @Autowired private EmailService emailService;
 
     @Autowired private DepartamentoRepository departamentoRepository;
     @Autowired private CategoriaRepository categoriaRepository;
     @Autowired private PrioridadRepository prioridadRepository;
     @Autowired private EstadoTicketRepository estadoTicketRepository;
-
-    // Si tienes Auditoria, descomenta esto. Si no, déjalo comentado para que no de error.
-    // @Autowired private AuditoriaTicketRepository auditoriaTicketRepository;
+    @Autowired private SubcategoriaRepository subcategoriaRepository;
 
     // =========================================================================
     // 1. MÉTODOS AUXILIARES PARA NAVEGACIÓN INTELIGENTE
@@ -60,7 +60,6 @@ public class AdminController {
     }
 
     private String obtenerUrlRetorno(HttpServletRequest request) {
-        // Si vienes del historial, vuelves al historial. Si no, a tickets globales.
         return esDesdeHistorial(request) ? "redirect:/admin/historial-global" : "redirect:/admin/tickets-globales";
     }
 
@@ -117,14 +116,17 @@ public class AdminController {
         return "admin/dashboard";
     }
 
+    // --- MODIFICADO: ORDEN POR DEFECTO ANTIGUOS PRIMERO (ROJOS ARRIBA) ---
     @GetMapping("/tickets-globales")
     public String verTicketsGlobales(Model model,
                                      @RequestParam(required = false) Long departamentoId,
                                      @RequestParam(required = false) Long prioridadId,
-                                     @RequestParam(required = false, defaultValue = "recientes") String orden,
+                                     @RequestParam(required = false, defaultValue = "antiguos") String orden, // Default cambiado
                                      @RequestParam(defaultValue = "0") int page) {
 
-        Sort sort = "antiguos".equals(orden) ? Sort.by("fechaCreacion").ascending() : Sort.by("fechaCreacion").descending();
+        // Lógica SLA: "antiguos" (default) -> Ascending (Viejos/Rojos primero)
+        Sort sort = "recientes".equals(orden) ? Sort.by("fechaCreacion").descending() : Sort.by("fechaCreacion").ascending();
+
         Pageable pageable = PageRequest.of(page, 10, sort);
 
         Specification<Ticket> spec = (root, query, cb) -> {
@@ -200,9 +202,6 @@ public class AdminController {
         return "admin/detalle-ticket";
     }
 
-    /**
-     * MÉTODO UNIFICADO: Maneja cambio de Estado y Asignación simultáneamente.
-     */
     @PostMapping("/tickets/reasignar")
     public String reasignarTicket(@RequestParam Long ticketId,
                                   @RequestParam(required = false) Long tecnicoId,
@@ -210,35 +209,46 @@ public class AdminController {
                                   RedirectAttributes flash) {
 
         Ticket ticket = ticketRepository.findById(ticketId).orElseThrow();
+        String nombreEstadoAnterior = ticket.getEstadoTicket().getNombreEstado();
         boolean cambioRealizado = false;
 
-        // 1. Lógica de Cambio de Estado
+        // --- Lógica de Cambio de Estado ---
         if (estadoId != null) {
             EstadoTicket nuevoEstado = estadoTicketRepository.findById(estadoId).orElseThrow();
 
-            // Solo aplicamos lógica si el estado es diferente
             if (!nuevoEstado.getId().equals(ticket.getEstadoTicket().getId())) {
                 ticket.setEstadoTicket(nuevoEstado);
 
-                // SUPERPODER: Si vuelve a INGRESADO, reseteamos todo para "revivir" el ticket
+                // SUPERPODER: Si vuelve a INGRESADO, reseteamos todo
                 if ("INGRESADO".equalsIgnoreCase(nuevoEstado.getNombreEstado())) {
                     ticket.setFechaCierre(null);
-                    // ticket.setSolucion(null); // Descomenta si agregas el campo solucion a la entidad
-                    ticket.setTecnicoAsignado(null); // Forzamos liberación
-                    tecnicoId = 0L; // Evitamos que se asigne técnico en el paso 2
+                    ticket.setTecnicoAsignado(null);
+                    tecnicoId = 0L;
+
                     flash.addFlashAttribute("mensajeExito", "✅ Ticket rescatado: Vuelve a INGRESADO y a la bolsa de activos.");
+
+                    // === DETECTOR DE RESURRECCIÓN (Notificar a Soporte) ===
+                    List<String> estadosMuertos = Arrays.asList("RESUELTO", "CANCELADO", "CERRADO", "NO_RESUELTO", "NO RESUELTO", "ESCALADO");
+
+                    if (estadosMuertos.contains(nombreEstadoAnterior.toUpperCase())) {
+                        String nombreAdmin = usuarioService.buscarPorEmail(SecurityContextHolder.getContext().getAuthentication().getName())
+                                .map(Usuario::getNombre).orElse("Administrador");
+
+                        List<Usuario> equipoSoporte = usuarioRepository.findByRol_NombreRol("SOPORTE");
+                        emailService.notificarReaperturaAdmin(equipoSoporte, ticket, nombreAdmin, nombreEstadoAnterior);
+                    }
                 }
                 cambioRealizado = true;
             }
         }
 
-        // 2. Lógica de Cambio de Técnico (Solo si no se reseteó a INGRESADO)
+        // --- Lógica de Cambio de Técnico ---
         if (tecnicoId != null) {
             if (tecnicoId > 0) {
                 Usuario tecnico = usuarioRepository.findById(tecnicoId).orElseThrow();
                 ticket.setTecnicoAsignado(tecnico);
                 if (!cambioRealizado) flash.addFlashAttribute("mensajeExito", "Ticket asignado a: " + tecnico.getNombre());
-            } else if (tecnicoId == 0 || tecnicoId == -1) { // 0 o -1 indica liberar
+            } else if (tecnicoId == 0 || tecnicoId == -1) {
                 ticket.setTecnicoAsignado(null);
                 if (!cambioRealizado) flash.addFlashAttribute("mensajeExito", "Ticket liberado a la bolsa.");
             }
@@ -275,7 +285,7 @@ public class AdminController {
     }
 
     // =========================================================================
-    // 5. GESTIÓN DE USUARIOS, PERFIL Y CONFIGURACIÓN (SIN CAMBIOS)
+    // 5. GESTIÓN DE USUARIOS, PERFIL Y CONFIGURACIÓN
     // =========================================================================
 
     @GetMapping("/usuarios")
@@ -413,7 +423,9 @@ public class AdminController {
 
             String baseUrl = request.getScheme() + "://" + request.getServerName();
             if (request.getServerPort() != 80 && request.getServerPort() != 443) baseUrl += ":" + request.getServerPort();
-            String link = baseUrl + "/restablecer?token=" + token;
+
+            // CORRECCIÓN: Agregado request.getContextPath() para soportar subcarpetas
+            String link = baseUrl + request.getContextPath() + "/restablecer?token=" + token;
 
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(usuario.getEmail());
@@ -432,6 +444,7 @@ public class AdminController {
         model.addAttribute("departamentos", dropdownService.listarDepartamentos());
         model.addAttribute("categorias", dropdownService.listarCategorias());
         model.addAttribute("prioridades", dropdownService.listarPrioridades());
+        model.addAttribute("subcategorias", dropdownService.listarSubcategorias());
         return "admin/configuracion";
     }
 
@@ -471,6 +484,41 @@ public class AdminController {
         try { categoriaRepository.deleteById(id); flash.addFlashAttribute("mensajeExito", "Categoría eliminada."); }
         catch (Exception e) { flash.addFlashAttribute("error", "No se puede eliminar, está en uso."); }
         flash.addFlashAttribute("activeTab", "cats");
+        return "redirect:/admin/configuracion";
+    }
+
+    // --- GUARDAR SUBCATEGORÍA (SIN PRIORIDAD) ---
+    @PostMapping("/configuracion/subcategorias/guardar")
+    public String guardarSubcategoria(@RequestParam String nombreSubcategoria,
+                                      @RequestParam Long categoriaId,
+                                      RedirectAttributes flash) {
+        if (nombreSubcategoria != null && !nombreSubcategoria.trim().isEmpty()) {
+            Subcategoria sub = new Subcategoria(nombreSubcategoria);
+
+            // Asignar Padre
+            Categoria cat = categoriaRepository.findById(categoriaId).orElseThrow();
+            sub.setCategoria(cat);
+
+            // Se elimina la asignación de prioridad automática.
+            // sub.setPrioridadDefecto(null);
+
+            subcategoriaRepository.save(sub);
+            flash.addFlashAttribute("mensajeExito", "Subcategoría guardada.");
+        }
+        flash.addFlashAttribute("activeTab", "subcats");
+        return "redirect:/admin/configuracion";
+    }
+
+    // --- ELIMINAR SUBCATEGORÍA ---
+    @GetMapping("/configuracion/eliminar-subcat/{id}")
+    public String eliminarSubcategoria(@PathVariable Long id, RedirectAttributes flash) {
+        try {
+            subcategoriaRepository.deleteById(id);
+            flash.addFlashAttribute("mensajeExito", "Subcategoría eliminada.");
+        } catch (Exception e) {
+            flash.addFlashAttribute("error", "No se puede eliminar, está en uso en tickets antiguos.");
+        }
+        flash.addFlashAttribute("activeTab", "subcats");
         return "redirect:/admin/configuracion";
     }
 

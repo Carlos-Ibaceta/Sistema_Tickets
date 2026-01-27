@@ -2,7 +2,7 @@ package com.example.system_tickets.controller;
 
 import com.example.system_tickets.entity.Usuario;
 import com.example.system_tickets.repository.UsuarioRepository;
-import com.example.system_tickets.service.UsuarioService; // <--- IMPORTANTE
+import com.example.system_tickets.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -24,7 +24,7 @@ public class PasswordFlowController {
 
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private PasswordEncoder passwordEncoder;
-    @Autowired private UsuarioService usuarioService; // <--- INYECTAMOS EL SERVICIO
+    @Autowired private UsuarioService usuarioService;
 
     // Pantalla de bloqueo (GET)
     @GetMapping("/cambiar-password")
@@ -47,19 +47,26 @@ public class PasswordFlowController {
                                      Principal principal,
                                      RedirectAttributes flash) {
 
-        // --- VALIDACIÓN DE SEGURIDAD ---
+        Usuario usuario = usuarioRepository.findByEmail(principal.getName()).orElseThrow();
+
+        // 1. VALIDACIÓN: NO REPETIR LA ANTERIOR (NUEVO)
+        if (passwordEncoder.matches(password, usuario.getPassword())) {
+            flash.addFlashAttribute("error", "Por seguridad, la nueva contraseña no puede ser igual a la actual.");
+            return "redirect:/obligatorio/cambiar-password";
+        }
+
+        // 2. VALIDACIÓN DE ROBUSTEZ (Ya existente)
         if (!usuarioService.esPasswordSegura(password)) {
             flash.addFlashAttribute("error", "Contraseña débil: Mínimo 8 caracteres, 1 mayúscula, 1 número y 1 símbolo.");
             return "redirect:/obligatorio/cambiar-password";
         }
-        // -------------------------------
 
-        Usuario usuario = usuarioRepository.findByEmail(principal.getName()).orElseThrow();
-
+        // GUARDAR CAMBIOS
         usuario.setPassword(passwordEncoder.encode(password));
         usuario.setCambioPasswordObligatorio(false);
         usuarioRepository.save(usuario);
 
+        // ACTUALIZAR SESIÓN
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(usuario.getEmail(), usuario.getPassword(), auth.getAuthorities())

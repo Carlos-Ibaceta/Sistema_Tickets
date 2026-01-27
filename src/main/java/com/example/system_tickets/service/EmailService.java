@@ -15,64 +15,109 @@ public class EmailService {
     @Autowired
     private JavaMailSender mailSender;
 
-    // --- NUEVO: Método Genérico Rápido (Úsalo para lo que quieras) ---
+    // --- MÉTODOS PÚBLICOS (ASÍNCRONOS) ---
+
     @Async
     public void enviarCorreoAsync(String destinatario, String asunto, String cuerpo) {
-        enviarEmail(destinatario, asunto, cuerpo);
+        enviarEmailReal(destinatario, asunto, cuerpo);
     }
 
-    // --- NUEVO: Confirmación de Creación de Ticket ---
     @Async
     public void notificarCreacionTicketUsuario(Ticket ticket) {
-        String asunto = "Ticket Creado Exitosamente - #" + ticket.getId();
+        String asunto = "Ticket Creado - #" + ticket.getId();
         String cuerpo = "Hola " + ticket.getUsuario().getNombre() + ",\n\n" +
-                "Tu ticket ha sido ingresado correctamente en nuestro sistema.\n" +
+                "Tu ticket ha sido ingresado correctamente.\n" +
                 "Asunto: " + ticket.getAsunto() + "\n\n" +
-                "Un técnico lo revisará a la brevedad.\n\n" +
                 "Atte, Soporte Municipalidad.";
-        enviarEmail(ticket.getUsuario().getEmail(), asunto, cuerpo);
+        enviarEmailReal(ticket.getUsuario().getEmail(), asunto, cuerpo);
     }
-
-    // --- TUS MÉTODOS EXISTENTES (Ya eran Async, ¡Super!) ---
 
     @Async
     public void notificarNuevoTicketSoporte(List<Usuario> equipoSoporte, Ticket ticket) {
-        // Validación extra por si el departamento es null
         String depto = (ticket.getDepartamento() != null) ? ticket.getDepartamento().getNombre() : "General";
         String asunto = "[NUEVO TICKET] #" + ticket.getId();
-        String cuerpo = "Se ha creado un ticket. Departamento: " + depto;
+        String cuerpo = "Se ha creado un ticket nuevo.\nDepartamento: " + depto + "\nAsunto: " + ticket.getAsunto();
 
         for (Usuario u : equipoSoporte) {
-            enviarEmail(u.getEmail(), asunto, cuerpo);
+            enviarEmailReal(u.getEmail(), asunto, cuerpo);
         }
     }
 
     @Async
     public void notificarAsignacionAlUsuario(Ticket ticket) {
-        enviarEmail(ticket.getUsuario().getEmail(), "Ticket en Proceso", "Tu ticket #" + ticket.getId() + " ha sido asignado.");
+        enviarEmailReal(ticket.getUsuario().getEmail(),
+                "Ticket en Proceso",
+                "Tu ticket #" + ticket.getId() + " ha sido asignado a un técnico y está en revisión.");
     }
 
     @Async
     public void notificarEscalamientoAdmin(List<Usuario> admins, Ticket ticket, String motivo) {
         for (Usuario a : admins) {
-            enviarEmail(a.getEmail(), "Ticket Escalado", "Ticket #" + ticket.getId() + " requiere atención. Motivo: " + motivo);
+            enviarEmailReal(a.getEmail(),
+                    "Ticket Escalado #" + ticket.getId(),
+                    "El ticket requiere atención superior.\nMotivo: " + motivo);
         }
     }
 
     @Async
     public void notificarResultadoSolicitante(Ticket ticket) {
-        enviarEmail(ticket.getUsuario().getEmail(), "Ticket Finalizado", "Tu ticket ha sido: " + ticket.getEstadoTicket().getNombre());
+        enviarEmailReal(ticket.getUsuario().getEmail(),
+                "Ticket Finalizado",
+                "Tu ticket #" + ticket.getId() + " ha sido marcado como: " + ticket.getEstadoTicket().getNombreEstado());
     }
 
-    // Método privado sincrónico (realiza el envío real)
-    private void enviarEmail(String destino, String asunto, String texto) {
+    @Async
+    public void notificarReaperturaAdmin(List<Usuario> soporteTeam, Ticket ticket, String nombreAdmin, String estadoAnterior) {
+        String asunto = "🔄 URGENTE: Ticket #" + ticket.getId() + " Reabierto";
+        String cuerpo = "El Administrador " + nombreAdmin + " ha reactivado el ticket #" + ticket.getId() + ".\n" +
+                "Estado previo: " + estadoAnterior;
+
+        for (Usuario s : soporteTeam) {
+            enviarEmailReal(s.getEmail(), asunto, cuerpo);
+        }
+    }
+
+    // --- NUEVO MÉTODO MOVIDO DESDE EL CONTROLADOR (OPTIMIZADO CON ASYNC) ---
+    @Async
+    public void notificarCambioEstado(Ticket ticket, String nombreNuevoEstado, String notas) {
+        if (ticket.getUsuario() == null || ticket.getUsuario().getEmail() == null) return;
+
+        String estadoLegible = nombreNuevoEstado.replace("_", " ");
+        String asunto = "Actualización Ticket #" + ticket.getId() + ": " + estadoLegible;
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Hola ").append(ticket.getUsuario().getNombre()).append(",\n\n");
+
+        if ("ESCALADO".equals(nombreNuevoEstado)) {
+            sb.append("Tu caso ha sido ESCALADO a un nivel superior para su revisión.\n");
+        } else if ("CANCELADO".equals(nombreNuevoEstado)) {
+            sb.append("Tu ticket ha sido CANCELADO.\n");
+        } else if ("NO_RESUELTO".equals(nombreNuevoEstado)) {
+            sb.append("Tu ticket ha sido cerrado como NO RESUELTO.\n");
+        } else {
+            sb.append("El estado de tu solicitud ha cambiado a: ").append(estadoLegible).append(".\n");
+        }
+
+        if (notas != null && !notas.trim().isEmpty()) {
+            sb.append("\n------------------------------------------------\n");
+            sb.append("📝 COMENTARIO DEL TÉCNICO:\n");
+            sb.append(notas);
+            sb.append("\n------------------------------------------------\n");
+        }
+
+        sb.append("\nSaludos,\nSoporte Informático Municipalidad de Cabildo");
+
+        enviarEmailReal(ticket.getUsuario().getEmail(), asunto, sb.toString());
+    }
+
+    // --- MÉTODO PRIVADO (SINCRÓNICO) ---
+    private void enviarEmailReal(String destino, String asunto, String texto) {
         try {
             SimpleMailMessage mensaje = new SimpleMailMessage();
             mensaje.setTo(destino);
             mensaje.setSubject(asunto);
             mensaje.setText(texto);
             mailSender.send(mensaje);
-            System.out.println("✅ Correo enviado a: " + destino);
         } catch (Exception e) {
             System.err.println("❌ Error enviando email a " + destino + ": " + e.getMessage());
         }

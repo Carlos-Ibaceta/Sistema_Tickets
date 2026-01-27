@@ -325,28 +325,28 @@
             <h5 class="card-title-custom"><i class="fas fa-bolt me-2"></i>Accesos Directos</h5>
         </div>
         <div class="action-grid">
-            <a href="/admin/usuarios" class="btn-quick-action">
+            <a th:href="@{/admin/usuarios}" class="btn-quick-action">
                 <i class="fas fa-user-plus"></i>
                 <div>
                     <div class="fw-bold">Usuarios</div>
                     <div class="small">Gestionar personal</div>
                 </div>
             </a>
-            <a href="/admin/tickets-globales" class="btn-quick-action">
+            <a th:href="@{/admin/tickets-globales}" class="btn-quick-action">
                 <i class="fas fa-search"></i>
                 <div>
                     <div class="fw-bold">Auditoría</div>
                     <div class="small">Revisar tickets</div>
                 </div>
             </a>
-            <a href="/reportes" class="btn-quick-action">
+            <a th:href="@{/reportes}" class="btn-quick-action">
                 <i class="fas fa-print"></i>
                 <div>
                     <div class="fw-bold">Reportes</div>
                     <div class="small">Estadísticas PDF</div>
                 </div>
             </a>
-            <a href="/admin/configuracion" class="btn-quick-action">
+            <a th:href="@{/admin/configuracion}" class="btn-quick-action">
                 <i class="fas fa-tools"></i>
                 <div>
                     <div class="fw-bold">Ajustes</div>
@@ -359,7 +359,7 @@
     <div class="content-card">
         <div class="card-header-custom">
             <h5 class="card-title-custom"><i class="fas fa-clock me-2"></i>Última Actividad</h5>
-            <a href="/admin/tickets-globales" class="btn btn-sm btn-outline-primary rounded-pill px-3">Ver Todo</a>
+            <a th:href="@{/admin/tickets-globales}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Ver Todo</a>
         </div>
         <div class="table-responsive">
             <table class="table table-custom table-hover mb-0">
@@ -386,7 +386,7 @@
                     </td>
                     <td>
                         <span class="badge rounded-pill"
-                              th:with="estado=${t.estadoTicket.nombre}"
+                              th:with="estado=${t.estadoTicket.nombreEstado}"
                               th:classappend="${estado == 'INGRESADO' ? 'bg-danger' : (estado == 'EN_PROCESO' ? 'bg-warning text-dark' : 'bg-success')}"
                               th:text="${#strings.replace(estado, '_', ' ')}">
                         </span>
@@ -404,7 +404,8 @@
 
 </div>
 
-<script src="/js/control-sesion.js"></script>
+<script th:src="@{/js/control-sesion.js}"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {

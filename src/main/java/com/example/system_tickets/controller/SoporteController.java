@@ -2,6 +2,7 @@ package com.example.system_tickets.controller;
 
 import com.example.system_tickets.entity.*;
 import com.example.system_tickets.repository.*;
+import com.example.system_tickets.service.EmailService;
 import com.example.system_tickets.service.UsuarioService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -39,13 +40,14 @@ public class SoporteController {
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private JavaMailSender mailSender;
     @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private EmailService emailService;
 
     @Autowired private CategoriaRepository categoriaRepository;
     @Autowired private PrioridadRepository prioridadRepository;
     @Autowired private EstadoTicketRepository estadoTicketRepository;
     @Autowired private SubcategoriaRepository subcategoriaRepository;
 
-    // --- MIS TICKETS (ACTIVOS: SOLO MUESTRA LO QUE SE ESTÁ TRABAJANDO) ---
+    // --- MIS TICKETS (MODIFICADO: ORDEN POR DEFECTO ANTIGUOS PRIMERO) ---
     @GetMapping("/mis-tickets")
     public String verMisTickets(Model model,
                                 Authentication auth,
@@ -53,13 +55,17 @@ public class SoporteController {
                                 @RequestParam(defaultValue = "0") int page,
                                 @RequestParam(required = false) Long categoriaId,
                                 @RequestParam(required = false) Long prioridadId,
-                                @RequestParam(required = false, defaultValue = "reciente") String orden) {
+                                @RequestParam(required = false, defaultValue = "antiguo") String orden) { // Default cambiado a "antiguo"
 
         Usuario tecnico = cargarDatosSesion(auth, session);
 
-        Sort sort = Sort.by("fechaCreacion").descending();
-        if ("antiguo".equals(orden)) {
-            sort = Sort.by("fechaCreacion").ascending();
+        // Lógica de ordenamiento para SLA (Semáforo):
+        // Por defecto ("antiguo") -> Ascendente (Viejos primero -> Rojos/Amarillos arriba)
+        // Si elige "reciente" -> Descendente (Nuevos primero -> Verdes arriba)
+        Sort sort = Sort.by("fechaCreacion").ascending();
+
+        if ("reciente".equals(orden)) {
+            sort = Sort.by("fechaCreacion").descending();
         } else if ("prioridad".equals(orden)) {
             sort = Sort.by("prioridad.id").descending();
         }
@@ -95,7 +101,7 @@ public class SoporteController {
         return "soporte/mis-tickets";
     }
 
-    // --- DASHBOARD (FILTRADO CORRECTO) ---
+    // --- DASHBOARD ---
     @GetMapping("/dashboard")
     public String dashboardSoporte(Model model, Authentication auth, HttpSession session) {
         Usuario tecnico = cargarDatosSesion(auth, session);
@@ -147,20 +153,22 @@ public class SoporteController {
         return "soporte/dashboard";
     }
 
-    // --- BOLSA DE TICKETS ---
+    // --- BOLSA DE TICKETS (MODIFICADO: ORDEN POR DEFECTO ANTIGUOS PRIMERO) ---
     @GetMapping("/tickets-disponibles")
     public String verTicketsDisponibles(Model model,
                                         Authentication auth,
                                         HttpSession session,
                                         @RequestParam(defaultValue = "0") int page,
                                         @RequestParam(required = false) String busqueda,
-                                        @RequestParam(required = false, defaultValue = "reciente") String orden) {
+                                        @RequestParam(required = false, defaultValue = "antiguo") String orden) { // Default cambiado a "antiguo"
 
         cargarDatosSesion(auth, session);
 
-        Sort sort = Sort.by("fechaCreacion").descending();
-        if ("antiguo".equals(orden)) {
-            sort = Sort.by("fechaCreacion").ascending();
+        // Lógica de ordenamiento para SLA (Semáforo) en Bolsa:
+        Sort sort = Sort.by("fechaCreacion").ascending(); // Por defecto: Viejos arriba
+
+        if ("reciente".equals(orden)) {
+            sort = Sort.by("fechaCreacion").descending();
         } else if ("prioridad".equals(orden)) {
             sort = Sort.by("prioridad.id").descending();
         }
@@ -265,7 +273,8 @@ public class SoporteController {
         if (enProceso != null) ticket.setEstadoTicket(enProceso);
 
         ticketRepository.save(ticket);
-        enviarNotificacionCambioEstado(ticket, "EN_PROCESO", null);
+
+        emailService.notificarCambioEstado(ticket, "EN_PROCESO", null);
 
         redirectAttributes.addFlashAttribute("mensajeExito", "Ticket #" + ticket.getId() + " tomado correctamente. ¡Buen trabajo!");
         return "redirect:/soporte/tickets-disponibles";
@@ -278,7 +287,7 @@ public class SoporteController {
         return "soporte/gestion";
     }
 
-    // --- GUARDAR GESTIÓN (AQUÍ ESTÁ LA LÓGICA FUERTE DE ESTADOS) ---
+    // --- GUARDAR GESTIÓN ---
     @PostMapping("/guardar-gestion")
     public String guardarGestionTicket(@RequestParam Long id,
                                        @RequestParam String nuevoEstado,
@@ -290,12 +299,11 @@ public class SoporteController {
 
         if(estado != null) {
             t.setEstadoTicket(estado);
-            enviarNotificacionCambioEstado(t, nuevoEstado, notas);
+            emailService.notificarCambioEstado(t, nuevoEstado, notas);
         } else {
             System.err.println("❌ ERROR: El estado '" + nuevoEstado + "' no existe en BD.");
         }
 
-        // AGREGAR AQUÍ TODOS LOS ESTADOS FINALES QUE DEBEN CERRAR FECHA
         if("RESUELTO".equals(nuevoEstado) ||
                 "ESCALADO".equals(nuevoEstado) ||
                 "NO_RESUELTO".equals(nuevoEstado) ||
@@ -305,8 +313,6 @@ public class SoporteController {
 
         ticketRepository.save(t);
 
-        // LOGICA DE REDIRECCION
-        // Si es un estado final -> Va al Historial
         if ("RESUELTO".equals(nuevoEstado) ||
                 "CANCELADO".equals(nuevoEstado) ||
                 "ESCALADO".equals(nuevoEstado) ||
@@ -314,24 +320,20 @@ public class SoporteController {
 
             flash.addFlashAttribute("mensajeExito", "Ticket #" + t.getId() + " movido al historial (" + nuevoEstado + ").");
         } else {
-            // Si sigue activo (EN_PROCESO) -> Se queda en Mis Tickets
             flash.addFlashAttribute("mensajeExito", "Estado del ticket actualizado.");
         }
         return "redirect:/soporte/mis-tickets";
     }
 
-    // --- HISTORIAL (MODIFICADO: AHORA USA LA CONSULTA BLINDADA) ---
+    // --- HISTORIAL ---
     @GetMapping("/historial")
     public String verHistorial(Model model, Authentication auth, HttpSession session, @RequestParam(defaultValue = "0") int page) {
         Usuario tecnico = cargarDatosSesion(auth, session);
 
-        // LISTA DE ESTADOS QUE APARECEN EN HISTORIAL
         List<String> estadosHistorial = Arrays.asList("RESUELTO", "CANCELADO", "CERRADO", "ESCALADO", "NO_RESUELTO");
 
         Pageable pageable = PageRequest.of(page, 10, Sort.by("fechaCreacion").descending());
 
-        // --- AQUÍ ESTÁ EL CAMBIO CRÍTICO ---
-        // Usamos findHistorialExactoPorTecnico para asegurar que solo traiga lo de ESTE técnico por ID
         Page<Ticket> historialPage = ticketRepository.findHistorialExactoPorTecnico(tecnico.getId(), estadosHistorial, pageable);
 
         model.addAttribute("tickets", historialPage);
@@ -392,7 +394,9 @@ public class SoporteController {
 
             String baseUrl = request.getScheme() + "://" + request.getServerName();
             if (request.getServerPort() != 80 && request.getServerPort() != 443) baseUrl += ":" + request.getServerPort();
-            String link = baseUrl + "/restablecer?token=" + token;
+
+            // CORRECCIÓN: Se agrega request.getContextPath() para soportar subcarpetas
+            String link = baseUrl + request.getContextPath() + "/restablecer?token=" + token;
 
             SimpleMailMessage msg = new SimpleMailMessage();
             msg.setTo(usuario.getEmail());
@@ -413,27 +417,19 @@ public class SoporteController {
         Usuario tecnico = cargarDatosSesion(auth, session);
         if (!tecnico.isKpisHabilitados()) return "redirect:/soporte/dashboard";
 
-        // Obtener todos los tickets asignados a este técnico
         List<Ticket> misTickets = ticketRepository.findByTecnicoAsignado(tecnico);
-
         long total = misTickets.size();
 
-        // Métricas básicas de estado
         long resueltos = misTickets.stream().filter(t -> "RESUELTO".equalsIgnoreCase(t.getEstadoTicket().getNombreEstado())).count();
         long enProceso = misTickets.stream().filter(t -> "EN_PROCESO".equalsIgnoreCase(t.getEstadoTicket().getNombreEstado())).count();
         int porcentajeExito = (total > 0) ? (int) ((resueltos * 100) / total) : 0;
 
-        // --- CÁLCULOS DE PRIORIDAD ---
         long alta = misTickets.stream().filter(t -> t.getPrioridad() != null && "ALTA".equalsIgnoreCase(t.getPrioridad().getNivelPrioridad())).count();
         long media = misTickets.stream().filter(t -> t.getPrioridad() != null && "MEDIA".equalsIgnoreCase(t.getPrioridad().getNivelPrioridad())).count();
         long baja = misTickets.stream().filter(t -> t.getPrioridad() != null && "BAJA".equalsIgnoreCase(t.getPrioridad().getNivelPrioridad())).count();
 
-        // --- CÁLCULOS DE CATEGORÍA ---
-        long hardware = misTickets.stream().filter(t -> t.getCategoria() != null && "Hardware".equalsIgnoreCase(t.getCategoria().getNombreCategoria())).count();
-        long software = misTickets.stream().filter(t -> t.getCategoria() != null && "Software".equalsIgnoreCase(t.getCategoria().getNombreCategoria())).count();
-        long redes = misTickets.stream().filter(t -> t.getCategoria() != null && "Redes".equalsIgnoreCase(t.getCategoria().getNombreCategoria())).count();
+        List<Object[]> categoriasStats = ticketRepository.contarTicketsPorCategoria();
 
-        // Enviar al Modelo
         model.addAttribute("total", total);
         model.addAttribute("resueltos", resueltos);
         model.addAttribute("enProceso", enProceso);
@@ -443,9 +439,8 @@ public class SoporteController {
         model.addAttribute("media", media);
         model.addAttribute("baja", baja);
 
-        model.addAttribute("hardware", hardware);
-        model.addAttribute("software", software);
-        model.addAttribute("redes", redes);
+        model.addAttribute("categoriasStats", categoriasStats);
+        model.addAttribute("totalCategorias", misTickets.stream().filter(t -> t.getCategoria() != null).count());
 
         return "soporte/estadisticas";
     }
@@ -455,43 +450,5 @@ public class SoporteController {
         session.setAttribute("usuarioNombre", usuario.getNombre());
         session.setAttribute("usuarioKpisHabilitados", usuario.isKpisHabilitados());
         return usuario;
-    }
-
-    private void enviarNotificacionCambioEstado(Ticket ticket, String nombreNuevoEstado, String notas) {
-        try {
-            if (ticket.getUsuario() == null || ticket.getUsuario().getEmail() == null) return;
-            SimpleMailMessage msg = new SimpleMailMessage();
-            msg.setTo(ticket.getUsuario().getEmail());
-
-            String estadoLegible = nombreNuevoEstado.replace("_", " ");
-            msg.setSubject("Actualización Ticket #" + ticket.getId() + ": " + estadoLegible);
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("Hola ").append(ticket.getUsuario().getNombre()).append(",\n\n");
-
-            if ("ESCALADO".equals(nombreNuevoEstado)) {
-                sb.append("Tu caso ha sido ESCALADO a un nivel superior para su revisión.\n");
-            } else if ("CANCELADO".equals(nombreNuevoEstado)) {
-                sb.append("Tu ticket ha sido CANCELADO.\n");
-            } else if ("NO_RESUELTO".equals(nombreNuevoEstado)) {
-                sb.append("Tu ticket ha sido cerrado como NO RESUELTO.\n");
-            } else {
-                sb.append("El estado de tu solicitud ha cambiado a: ").append(estadoLegible).append(".\n");
-            }
-
-            if (notas != null && !notas.trim().isEmpty()) {
-                sb.append("\n------------------------------------------------\n");
-                sb.append("📝 COMENTARIO DEL TÉCNICO:\n");
-                sb.append(notas);
-                sb.append("\n------------------------------------------------\n");
-            }
-
-            sb.append("\nSaludos,\nSoporte Informático Municipalidad de Cabildo");
-            msg.setText(sb.toString());
-
-            mailSender.send(msg);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

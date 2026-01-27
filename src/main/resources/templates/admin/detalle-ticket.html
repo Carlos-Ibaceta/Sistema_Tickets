@@ -145,7 +145,7 @@
       <button class="btn btn-outline-dark d-lg-none me-2" id="sidebarToggle"><i class="fas fa-bars"></i></button>
       <h3 class="fw-bold text-dark d-inline-block">Administración de Ticket</h3>
     </div>
-    <a th:href="${esDesdeHistorial} ? '/admin/historial-global' : '/admin/tickets-globales'"
+    <a th:href="@{${esDesdeHistorial ? '/admin/historial-global' : '/admin/tickets-globales'}}"
        class="btn btn-outline-secondary btn-sm fw-bold">
       <i class="fas fa-arrow-left me-2"></i> Volver
     </a>
@@ -171,30 +171,70 @@
         </div>
 
         <div class="gestion-card-body">
-          <div class="row g-4 mb-4 pb-4 border-bottom">
-            <div class="col-md-3">
-              <div class="label-detail">Estado</div>
-              <span class="badge rounded-pill"
-                    th:classappend="${ticket.estadoTicket.nombreEstado == 'RESUELTO'} ? 'bg-success' :
-                                   (${ticket.estadoTicket.nombreEstado == 'CANCELADO'} ? 'bg-dark' : 'bg-primary')"
-                    th:text="${#strings.replace(ticket.estadoTicket.nombreEstado, '_', ' ')}">ESTADO</span>
+          <div class="mb-4 pb-4 border-bottom">
+            <div class="row g-4 mb-4">
+              <div class="col-md-3">
+                <div class="label-detail">Estado Actual</div>
+                <span class="badge rounded-pill"
+                      th:classappend="${ticket.estadoTicket.nombreEstado == 'RESUELTO'} ? 'bg-success' :
+                                  (${ticket.estadoTicket.nombreEstado == 'CANCELADO' || ticket.estadoTicket.nombreEstado == 'NO_RESUELTO'} ? 'bg-dark' :
+                                  (${ticket.estadoTicket.nombreEstado == 'ESCALADO'} ? 'bg-warning text-dark' : 'bg-primary'))"
+                      th:text="${#strings.replace(ticket.estadoTicket.nombreEstado, '_', ' ')}">ESTADO</span>
+              </div>
+              <div class="col-md-3">
+                <div class="label-detail">Prioridad</div>
+                <span class="badge rounded-pill"
+                      th:classappend="${ticket.prioridad == null} ? 'bg-secondary' :
+                                  (${ticket.prioridad.nivelPrioridad == 'ALTA'} ? 'bg-danger' :
+                                  (${ticket.prioridad.nivelPrioridad == 'MEDIA'} ? 'bg-warning text-dark' : 'bg-info text-dark'))"
+                      th:text="${ticket.prioridad != null ? ticket.prioridad.nivelPrioridad : 'Sin Asignar'}">Prioridad</span>
+              </div>
+              <div class="col-md-3">
+                <div class="label-detail">Categoría / Subcat.</div>
+                <div class="value-detail">
+                  <i class="fas fa-tags"></i>
+                  <span th:text="${ticket.categoria != null ? ticket.categoria.nombreCategoria : 'Sin Categoría'}">Cat</span>
+                  <span th:if="${ticket.subcategoria != null}" th:text="' / ' + ${ticket.subcategoria.nombreSubcategoria}"></span>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="label-detail">Técnico Responsable</div>
+                <div class="value-detail fw-bold text-primary">
+                  <i class="fas fa-user-shield"></i>
+                  <span th:text="${ticket.tecnicoAsignado != null ? ticket.tecnicoAsignado.nombre : 'SIN ASIGNAR (En Bolsa)'}">Técnico</span>
+                </div>
+              </div>
             </div>
-            <div class="col-md-3">
-              <div class="label-detail">Prioridad</div>
-              <span class="badge rounded-pill"
-                    th:classappend="${ticket.prioridad != null && ticket.prioridad.nivelPrioridad == 'ALTA'} ? 'bg-danger' : 'bg-secondary'"
-                    th:text="${ticket.prioridad != null ? ticket.prioridad.nivelPrioridad : 'Sin Asignar'}">Alta</span>
-            </div>
-            <div class="col-md-3">
-              <div class="label-detail">Fecha</div>
-              <div class="value-detail"><i class="far fa-calendar-alt"></i> <span th:text="${#temporals.format(ticket.fechaCreacion, 'dd/MM/yyyy')}"></span></div>
-            </div>
-            <div class="col-md-3">
-              <div class="label-detail">Solicitante</div>
-              <div class="value-detail"><i class="fas fa-user"></i> <span th:text="${ticket.usuario.nombre}">Juan</span></div>
+
+            <div class="row g-4">
+              <div class="col-md-3">
+                <div class="label-detail">Solicitante</div>
+                <div class="value-detail"><i class="fas fa-user"></i> <span th:text="${ticket.usuario.nombre}">Juan</span></div>
+              </div>
+              <div class="col-md-3">
+                <div class="label-detail">Departamento Origen</div>
+                <div class="value-detail"><i class="fas fa-building"></i> <span th:text="${ticket.departamento != null ? ticket.departamento.nombre : 'No especificado'}">Depto</span></div>
+              </div>
+              <div class="col-md-3">
+                <div class="label-detail">Fecha Creación</div>
+                <div class="value-detail text-muted small"><i class="far fa-calendar-plus"></i> <span th:text="${#temporals.format(ticket.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span></div>
+              </div>
+              <div class="col-md-3">
+                <div th:if="${ticket.fechaCierre != null}">
+                  <div class="label-detail text-success">Fecha de Cierre</div>
+                  <div class="value-detail text-success small fw-bold"><i class="far fa-calendar-check"></i> <span th:text="${#temporals.format(ticket.fechaCierre, 'dd/MM/yyyy HH:mm')}"></span></div>
+                </div>
+                <div th:if="${ticket.fechaCierre == null and ticket.fechaAsignacion != null}">
+                  <div class="label-detail">Fecha Asignación</div>
+                  <div class="value-detail text-muted small"><i class="far fa-clock"></i> <span th:text="${#temporals.format(ticket.fechaAsignacion, 'dd/MM/yyyy HH:mm')}"></span></div>
+                </div>
+                <div th:if="${ticket.fechaCierre == null and ticket.fechaAsignacion == null}">
+                  <div class="label-detail">Estado Temporal</div>
+                  <div class="value-detail text-muted small fst-italic"><i class="far fa-hourglass"></i> En espera de asignación</div>
+                </div>
+              </div>
             </div>
           </div>
-
           <div class="mb-4">
             <div class="label-detail text-primary">Asunto</div>
             <h5 class="fw-bold text-dark mt-1" th:text="${ticket.asunto}">Problema...</h5>
@@ -324,7 +364,7 @@
   </div>
 </div>
 
-<script src="/js/control-sesion.js"></script>
+<script th:src="@{/js/control-sesion.js}"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', () => {

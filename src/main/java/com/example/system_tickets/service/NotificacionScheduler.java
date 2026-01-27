@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Arrays; // <--- IMPORTANTE: Agregado para usar listas fáciles
 
 @Component
 public class NotificacionScheduler {
@@ -19,62 +20,66 @@ public class NotificacionScheduler {
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private JavaMailSender mailSender;
 
-    // --- MODO PRODUCCIÓN: CADA 4 HORAS (14.400.000 ms), CADA 1 MINUTO (60.000) SOLO PRUEBAS ---
+    // --- MODO PRODUCCIÓN: CADA 4 HORAS (14.400.000 ms) ---
     @Scheduled(fixedRate = 14400000)
     public void recordarTicketsPendientes() {
-        System.out.println("--- ⏰ EJECUTANDO SCHEDULER (4 HORAS): Buscando tickets pendientes... ---");
+        System.out.println("--- ⏰ EJECUTANDO SCHEDULER: Buscando tickets pendientes... ---");
 
-        // 1. Buscar todos los tickets
         List<Ticket> todos = ticketRepository.findAll();
-
-        // 2. Buscar técnicos de soporte
         List<Usuario> soportes = usuarioRepository.findByRol_NombreRol("SOPORTE");
 
         if (soportes.isEmpty()) {
-            System.out.println("⚠️ No hay usuarios de soporte para notificar.");
             return;
         }
 
         int contadorRecordatorios = 0;
 
-        for (Ticket t : todos) {
-            String estado = t.getEstadoTicket().getNombreEstado();
+        // --- LISTA NEGRA: Estados que NO deben recibir correo ---
+        List<String> estadosIgnorados = Arrays.asList(
+                "RESUELTO",
+                "CERRADO",
+                "CANCELADO",
+                "ESCALADO",     // <--- AGREGADO: Ya no molestará
+                "NO RESUELTO",  // <--- AGREGADO: Ya no molestará
+                "NO_RESUELTO"   // <--- AGREGADO: Por si acaso en la BD está con guion bajo
+        );
 
-            // 3. Filtrar solo los que NO están resueltos ni cerrados
-            if (!"RESUELTO".equalsIgnoreCase(estado) &&
-                    !"CERRADO".equalsIgnoreCase(estado) &&
-                    !"CANCELADO".equalsIgnoreCase(estado)) {
+        for (Ticket t : todos) {
+            // Obtenemos el nombre y quitamos espacios en blanco por si acaso
+            String estado = t.getEstadoTicket().getNombreEstado().trim().toUpperCase();
+
+            // Si el estado actual NO está en la lista negra, enviamos correo
+            if (!estadosIgnorados.contains(estado)) {
 
                 contadorRecordatorios++;
 
-                // 4. Enviar correo a cada técnico
                 for (Usuario s : soportes) {
                     try {
                         SimpleMailMessage msg = new SimpleMailMessage();
                         msg.setTo(s.getEmail());
-                        msg.setSubject("⏰ RECORDATORIO: Ticket #" + t.getId() + " sigue pendiente");
+                        msg.setSubject("⏰ RECORDATORIO: Ticket #" + t.getId() + " requiere atención");
 
                         StringBuilder sb = new StringBuilder();
                         sb.append("Hola ").append(s.getNombre()).append(",\n\n");
-                        sb.append("Este es un recordatorio automático del sistema (cada 4 horas).\n");
-                        sb.append("El ticket #").append(t.getId()).append(" ('").append(t.getAsunto()).append("') aún no ha sido resuelto.\n\n");
-                        sb.append("--- ESTADO ACTUAL ---\n");
-                        sb.append("Estado: ").append(estado).append("\n");
+                        sb.append("Recordatorio automático (4 horas).\n");
+                        sb.append("El ticket #").append(t.getId()).append(" ('").append(t.getAsunto()).append("') sigue pendiente.\n\n");
+                        sb.append("Estado Actual: ").append(estado).append("\n");
                         sb.append("Prioridad: ").append(t.getPrioridad() != null ? t.getPrioridad().getNivelPrioridad() : "N/A").append("\n");
-                        sb.append("Fecha Creación: ").append(t.getFechaCreacion()).append("\n\n");
-                        sb.append("Por favor, revisar a la brevedad.");
+                        sb.append("Fecha: ").append(t.getFechaCreacion()).append("\n\n");
 
                         msg.setText(sb.toString());
                         mailSender.send(msg);
                     } catch (Exception e) {
-                        System.out.println("❌ Error enviando recordatorio a " + s.getEmail() + ": " + e.getMessage());
+                        System.out.println("❌ Error: " + e.getMessage());
                     }
                 }
             }
         }
 
         if (contadorRecordatorios > 0) {
-            System.out.println("--- 📨 Se enviaron recordatorios para " + contadorRecordatorios + " tickets ---");
+            System.out.println("--- 📨 Se enviaron " + contadorRecordatorios + " recordatorios ---");
+        } else {
+            System.out.println("--- ✅ Todo al día. No hay recordatorios pendientes. ---");
         }
     }
 }

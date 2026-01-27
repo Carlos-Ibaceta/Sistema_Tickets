@@ -45,6 +45,9 @@ public class TicketController {
     @Autowired private EmailService emailService;
     @Autowired private PasswordEncoder passwordEncoder;
 
+    // LISTA BLANCA DE EXTENSIONES PERMITIDAS (SEGURIDAD)
+    private static final List<String> EXTENSIONES_PERMITIDAS = Arrays.asList("jpg", "jpeg", "png", "pdf", "doc", "docx");
+
     @GetMapping("/mis-tickets")
     public String misTickets(Model model, Authentication auth, HttpSession session, @RequestParam(defaultValue = "0") int page) {
         Usuario usuario = cargarDatosSesion(auth, session);
@@ -95,22 +98,40 @@ public class TicketController {
             // 4. Prioridad: SE DEJA NULL (La asignará Soporte después)
             ticket.setPrioridad(null);
 
-            // 5. Manejo de Imagen
+            // 5. BLINDAJE DE SEGURIDAD PARA ARCHIVOS
             if (imagen != null && !imagen.isEmpty()) {
+                String nombreOriginal = imagen.getOriginalFilename();
+                String extension = "";
+
+                if (nombreOriginal != null && nombreOriginal.contains(".")) {
+                    extension = nombreOriginal.substring(nombreOriginal.lastIndexOf(".") + 1).toLowerCase();
+                }
+
+                // VALIDACIÓN: ¿Está en la lista blanca?
+                if (!EXTENSIONES_PERMITIDAS.contains(extension)) {
+                    flash.addFlashAttribute("error", "⛔ Error de seguridad: Tipo de archivo no permitido. Solo se aceptan: JPG, PNG, PDF, DOC, DOCX.");
+                    return "redirect:/tickets/nuevo";
+                }
+
+                // Si pasa la validación, procedemos a guardar
                 String rutaBase = "uploads";
                 try {
-                    String nombreUnico = System.currentTimeMillis() + "_" + imagen.getOriginalFilename();
+                    // Limpiamos el nombre para evitar caracteres raros
+                    String nombreSeguro = System.currentTimeMillis() + "_" + nombreOriginal.replaceAll("[^a-zA-Z0-9\\.\\-_]", "_");
+
                     Path rutaCompleta = Paths.get(rutaBase);
                     if (!Files.exists(rutaCompleta)) Files.createDirectories(rutaCompleta);
-                    Files.copy(imagen.getInputStream(), rutaCompleta.resolve(nombreUnico));
-                    ticket.setEvidencia(nombreUnico);
-                } catch (IOException e) { e.printStackTrace(); }
+                    Files.copy(imagen.getInputStream(), rutaCompleta.resolve(nombreSeguro));
+                    ticket.setEvidencia(nombreSeguro);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
             // 6. Guardar Ticket
             Ticket guardado = ticketRepository.save(ticket);
 
-            // 7. Notificaciones (BLINDADO: Si falla el correo, el ticket NO se pierde)
+            // 7. Notificaciones (BLINDADO)
             try {
                 emailService.notificarCreacionTicketUsuario(guardado);
                 List<Usuario> soportes = usuarioRepository.findByRol_NombreRol("SOPORTE");
@@ -119,7 +140,6 @@ public class TicketController {
                 }
             } catch (Exception e) {
                 System.err.println("⚠️ ADVERTENCIA: Ticket creado pero falló el envío de correo: " + e.getMessage());
-                // No lanzamos la excepción para no asustar al usuario
             }
 
             flash.addFlashAttribute("mensajeExito", "Solicitud creada exitosamente. Ticket #" + guardado.getId());
@@ -132,10 +152,13 @@ public class TicketController {
         }
     }
 
+    // --- PERFIL DEL FUNCIONARIO (MODIFICADO) ---
     @GetMapping("/perfil")
     public String verPerfil(Model model, Authentication auth, HttpSession session) {
         Usuario usuario = cargarDatosSesion(auth, session);
         model.addAttribute("usuario", usuario);
+        // NUEVO: Enviamos la lista de departamentos para el select
+        model.addAttribute("departamentos", dropdownService.listarDepartamentos());
         return "tickets/perfil";
     }
 
@@ -166,6 +189,10 @@ public class TicketController {
 
         original.setNombre(usuario.getNombre());
         original.setEmail(usuario.getEmail());
+
+        // NUEVO: Guardamos el cambio de departamento
+        original.setDepartamento(usuario.getDepartamento());
+
         usuarioService.guardarUsuario(original);
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -187,7 +214,9 @@ public class TicketController {
 
             String baseUrl = request.getScheme() + "://" + request.getServerName();
             if (request.getServerPort() != 80 && request.getServerPort() != 443) baseUrl += ":" + request.getServerPort();
-            String link = baseUrl + "/restablecer?token=" + token;
+
+            // CORRECCIÓN: Agregado request.getContextPath() para soportar subcarpetas
+            String link = baseUrl + request.getContextPath() + "/restablecer?token=" + token;
 
             String cuerpo = "Hola " + usuario.getNombre() + ",\n\n" +
                     "Has solicitado restablecer tu contraseña. Haz clic en el siguiente enlace:\n" +

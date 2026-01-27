@@ -2,13 +2,17 @@ package com.example.system_tickets.controller;
 
 import com.example.system_tickets.entity.Usuario;
 import com.example.system_tickets.repository.UsuarioRepository;
-import com.example.system_tickets.service.UsuarioService; // <--- IMPORTANTE
+import com.example.system_tickets.service.UsuarioService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.WebAttributes;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,12 +30,35 @@ public class AuthController {
     @Autowired private UsuarioRepository usuarioRepository;
     @Autowired private JavaMailSender mailSender;
     @Autowired private PasswordEncoder passwordEncoder;
-    @Autowired private UsuarioService usuarioService; // <--- INYECTAMOS EL SERVICIO
+    @Autowired private UsuarioService usuarioService;
 
+    // --- LOGIN MODIFICADO PARA DETECTAR INACTIVOS ---
     @GetMapping("/login")
     public String mostrarLogin(@RequestParam(value = "error", required = false) String error,
-                               @RequestParam(value = "logout", required = false) String logout, Model model) {
-        if (error != null) model.addAttribute("error", "Credenciales incorrectas.");
+                               @RequestParam(value = "logout", required = false) String logout,
+                               Model model,
+                               HttpSession session) {
+
+        if (error != null) {
+            String mensajeError = "Credenciales incorrectas.";
+
+            // 1. Recuperamos la excepción exacta que lanzó Spring Security
+            Object excepcion = session.getAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
+
+            // 2. Verificamos si es del tipo "Usuario Deshabilitado"
+            if (excepcion instanceof DisabledException) {
+                mensajeError = " TU CUENTA ESTÁ INACTIVA. Contacta al administrador.";
+            }
+            else if (excepcion instanceof AuthenticationException) {
+                String msg = ((AuthenticationException) excepcion).getMessage();
+                if (msg != null && (msg.contains("disabled") || msg.contains("Inactivo"))) {
+                    mensajeError = " TU CUENTA ESTÁ INACTIVA. Contacta al administrador.";
+                }
+            }
+
+            model.addAttribute("error", mensajeError);
+        }
+
         if (logout != null) model.addAttribute("mensaje", "Sesión cerrada.");
         return "login";
     }
@@ -60,9 +87,10 @@ public class AuthController {
             int puerto = request.getServerPort();
 
             String baseUrl = esquema + "://" + servidor;
-            if (puerto != 80) { baseUrl += ":" + puerto; }
+            if (puerto != 80 && puerto != 443) { baseUrl += ":" + puerto; }
 
-            String link = baseUrl + "/reset-password?token=" + token;
+            // CORRECCIÓN: Se agrega request.getContextPath() para soportar despliegue en subcarpetas
+            String link = baseUrl + request.getContextPath() + "/reset-password?token=" + token;
 
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(email);
@@ -98,12 +126,10 @@ public class AuthController {
                                        HttpServletRequest request,
                                        RedirectAttributes flash) {
 
-        // --- VALIDACIÓN DE SEGURIDAD ---
         if (!usuarioService.esPasswordSegura(password)) {
             flash.addFlashAttribute("error", "Contraseña débil: Mínimo 8 caracteres, 1 mayúscula, 1 número y 1 símbolo.");
             return "redirect:/restablecer?token=" + token;
         }
-        // -------------------------------
 
         Optional<Usuario> usuarioOpt = usuarioRepository.findByResetToken(token);
 

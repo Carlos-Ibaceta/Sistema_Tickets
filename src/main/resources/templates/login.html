@@ -17,7 +17,6 @@
 
         body {
             background-color: var(--muni-gris);
-            /* Fondo institucional sobrio */
             background-image: linear-gradient(135deg, #eef2f3 0%, #8e9eab 100%);
             min-height: 100vh;
             display: flex;
@@ -37,10 +36,9 @@
             padding: 2.5rem;
         }
 
-        /* LOGO */
         .muni-logo {
             width: auto;
-            max-height: 140px; /* Tamaño ajustado para que se vea bien */
+            max-height: 140px;
             margin-bottom: 1.5rem;
             display: block;
             margin-left: auto;
@@ -89,9 +87,11 @@
         <h2 class="login-title">Sistema de Tickets</h2>
         <p class="login-subtitle">Plataforma de Soporte Informático</p>
 
-        <div th:if="${param.error}" class="alert alert-danger small py-2 fade show">
-            <i class="fas fa-exclamation-circle me-2"></i>Credenciales incorrectas.
+        <div th:if="${error}" class="alert alert-danger small py-2 fade show">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span th:text="${error}">Credenciales incorrectas</span>
         </div>
+
         <div th:if="${param.logout}" class="alert alert-info small py-2 fade show">
             <i class="fas fa-info-circle me-2"></i>Ha cerrado sesión correctamente.
         </div>

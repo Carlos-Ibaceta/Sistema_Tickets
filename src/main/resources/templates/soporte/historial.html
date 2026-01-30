@@ -48,28 +48,38 @@
         /* TARJETA DE CONTENIDO */
         .card-muni { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: none; overflow: hidden; padding-bottom: 20px; }
 
-        /* TABLA COMPACTA */
+        /* TABLA MODERNA (ESTILO ADMIN) */
         .table-custom { margin-bottom: 0; font-size: 0.85rem; }
         .table-custom thead th {
-            background-color: #f8f9fa; color: var(--muni-azul); font-weight: 700; border-bottom: 2px solid #e9ecef;
-            padding: 10px 15px; text-transform: uppercase; font-size: 0.8rem;
+            background-color: #343a40; /* Cabecera oscura estilo admin */
+            color: #e0e0e0;
+            font-weight: 700; border-bottom: none;
+            padding: 15px; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;
         }
         .table-custom tbody td {
-            padding: 8px 15px; vertical-align: middle; border-bottom: 1px solid #f0f0f0; color: #555; font-weight: 500;
+            padding: 12px 15px; vertical-align: middle; border-bottom: 1px solid #f0f0f0;
+            color: #555; font-weight: 500;
         }
-        .table-custom tbody tr:hover { background-color: #fcfcfc; }
+        .table-custom tbody tr:hover { background-color: #f8f9fa; }
 
-        /* BADGES */
-        .badge-status { padding: 5px 10px; border-radius: 20px; font-weight: 600; font-size: 0.7rem; letter-spacing: 0.5px; }
+        /* BADGES ESTILO PASTEL (NUEVO) */
+        .badge-pill { padding: 6px 12px; border-radius: 50px; font-weight: 700; font-size: 0.7rem; letter-spacing: 0.5px; border: 1px solid transparent; }
 
-        /* ESTILOS PAGINACIÓN */
+        .badge-success-subtle { background-color: #d1e7dd; color: #0f5132; border-color: #badbcc; } /* Resuelto */
+        .badge-danger-subtle { background-color: #f8d7da; color: #842029; border-color: #f5c2c7; } /* Cancelado */
+        .badge-warning-subtle { background-color: #fff3cd; color: #664d03; border-color: #ffecb5; } /* Escalado */
+        .badge-purple-subtle { background-color: #e2d9f3; color: #59359a; border-color: #d0c2ed; } /* NO RESUELTO (Lila) */
+
+        /* BOTONES DE ACCIÓN (ICONOS) */
+        .btn-icon { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; border: 1px solid transparent; transition: all 0.2s; }
+        .btn-view { background-color: #e3f2fd; color: #0d6efd; border-color: #cff4fc; }
+        .btn-view:hover { background-color: #0d6efd; color: white; }
+
+        /* PAGINACIÓN */
         .pagination .page-link { color: var(--muni-azul); border: none; margin: 0 3px; border-radius: 5px; font-weight: 600; font-size: 0.9rem; }
         .pagination .page-link:hover { background-color: #e9ecef; color: var(--muni-azul-dark); }
         .pagination .page-item.active .page-link { background-color: var(--muni-azul); color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .pagination .page-item.disabled .page-link { color: #ccc; background-color: transparent; }
-
-        /* Botones pequeños */
-        .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.75rem; }
 
         @media (max-width: 992px) {
             .sidebar { left: -260px; } .sidebar.active { left: 0; }
@@ -78,37 +88,33 @@
             .overlay.active { display: block; }
         }
 
-        /* --- MODO OSCURO (CON FIX LOGO) --- */
+        /* --- MODO OSCURO --- */
         [data-bs-theme="dark"] { --muni-gris-fondo: #212529; }
-
-        /* 1. FIX LOGO */
-        [data-bs-theme="dark"] .sidebar-header {
-            background-color: transparent !important;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
+        [data-bs-theme="dark"] .sidebar-header { background-color: transparent !important; border-bottom: 1px solid rgba(255,255,255,0.1); }
         [data-bs-theme="dark"] .logo-img { filter: none; }
-
-        /* 2. Tarjetas y Tablas */
-        [data-bs-theme="dark"] .card-muni,
-        [data-bs-theme="dark"] .header-section { background-color: #343a40 !important; color: #e0e0e0; border-color: #495057; }
-
-        /* Textos */
+        [data-bs-theme="dark"] .card-muni, [data-bs-theme="dark"] .header-section { background-color: #343a40 !important; color: #e0e0e0; border-color: #495057; }
         [data-bs-theme="dark"] .page-title { color: #e0e0e0; }
         [data-bs-theme="dark"] .text-dark { color: #e0e0e0 !important; }
         [data-bs-theme="dark"] .text-muted { color: #adb5bd !important; }
         [data-bs-theme="dark"] .text-secondary { color: #adb5bd !important; }
 
-        /* Tablas */
-        [data-bs-theme="dark"] .table-custom thead th { background-color: #2c3034; color: #e0e0e0; border-bottom-color: #495057; }
+        /* Tablas Dark */
+        [data-bs-theme="dark"] .table-custom thead th { background-color: #212529; color: #adb5bd; border-bottom-color: #495057; }
         [data-bs-theme="dark"] .table-custom tbody td { color: #cfd2d6; border-bottom-color: #495057; }
         [data-bs-theme="dark"] .table-custom tbody tr:hover { background-color: #3e444a; }
 
-        /* Iconos y Badges */
+        /* Botones Dark */
         [data-bs-theme="dark"] .bg-light { background-color: #2b3035 !important; border-color: #495057 !important; color: #adb5bd; }
-
-        /* Paginación */
+        [data-bs-theme="dark"] .btn-view { background-color: #343a40; border-color: #0d6efd; color: #0d6efd; }
+        [data-bs-theme="dark"] .btn-view:hover { background-color: #0d6efd; color: white; }
         [data-bs-theme="dark"] .pagination .page-link { background-color: #343a40; border-color: #495057; color: #e0e0e0; }
         [data-bs-theme="dark"] .pagination .page-item.active .page-link { background-color: var(--muni-azul); color: white; }
+
+        /* Badges Dark Mode (Ajuste de contraste) */
+        [data-bs-theme="dark"] .badge-success-subtle { background-color: rgba(25, 135, 84, 0.2); color: #75b798; border-color: transparent; }
+        [data-bs-theme="dark"] .badge-danger-subtle { background-color: rgba(220, 53, 69, 0.2); color: #ea868f; border-color: transparent; }
+        [data-bs-theme="dark"] .badge-warning-subtle { background-color: rgba(255, 193, 7, 0.2); color: #ffda6a; border-color: transparent; }
+        [data-bs-theme="dark"] .badge-purple-subtle { background-color: rgba(111, 66, 193, 0.2); color: #d6b3ff; border-color: transparent; }
     </style>
 </head>
 <body>
@@ -184,16 +190,16 @@
                     <th>Asunto</th>
                     <th>Solicitante</th>
                     <th>Categoría</th>
-                    <th><i class="far fa-calendar-alt me-1"></i> Fecha Creación</th>
+                    <th><i class="far fa-calendar-alt me-1"></i> Creación</th>
                     <th>Estado Final</th>
-                    <th class="text-end">Acciones</th>
+                    <th class="text-center">Acción</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="t : ${tickets}">
                     <td class="fw-bold" style="color: #6c757d;" th:text="'#' + ${t.id}">#000</td>
 
-                    <td class="fw-semibold" th:text="${t.asunto}">Asunto</td>
+                    <td class="fw-semibold text-truncate" style="max-width: 250px;" th:text="${t.asunto}" th:title="${t.asunto}">Asunto</td>
 
                     <td>
                         <div class="d-flex align-items-center">
@@ -209,17 +215,19 @@
                     <td class="small text-muted" th:text="${t.fechaCreacion != null ? #temporals.format(t.fechaCreacion, 'dd/MM/yyyy') : '-'}">01/01/2026</td>
 
                     <td>
-                        <span class="badge-status"
-                              th:classappend="${t.estadoTicket != null && t.estadoTicket.nombreEstado == 'RESUELTO'} ? 'bg-success text-white' :
-                                              (${t.estadoTicket != null && t.estadoTicket.nombreEstado == 'CANCELADO'} ? 'bg-danger text-white' : 'bg-secondary text-white')"
-                              th:text="${t.estadoTicket != null ? #strings.replace(t.estadoTicket.nombreEstado, '_', ' ') : 'CERRADO'}">
+                        <span class="badge badge-pill"
+                              th:classappend="${t.estadoTicket.nombreEstado == 'RESUELTO'} ? 'badge-success-subtle' :
+                                              (${t.estadoTicket.nombreEstado == 'CANCELADO'} ? 'badge-danger-subtle' :
+                                              (${t.estadoTicket.nombreEstado == 'NO_RESUELTO'} ? 'badge-purple-subtle' :
+                                              (${t.estadoTicket.nombreEstado == 'ESCALADO'} ? 'badge-warning-subtle' : 'badge-secondary')))"
+                              th:text="${#strings.replace(t.estadoTicket.nombreEstado, '_', ' ')}">
                              RESUELTO
                         </span>
                     </td>
 
-                    <td class="text-end">
-                        <a th:href="@{/soporte/detalle/{id}(id=${t.id})}" class="btn btn-sm btn-outline-secondary shadow-sm" title="Ver Detalles">
-                            <i class="fas fa-eye me-1"></i> Ver Ficha
+                    <td class="text-center">
+                        <a th:href="@{/soporte/detalle/{id}(id=${t.id})}" class="btn-icon btn-view" title="Ver Ficha">
+                            <i class="fas fa-eye"></i>
                         </a>
                     </td>
                 </tr>

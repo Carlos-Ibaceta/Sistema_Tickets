@@ -55,13 +55,11 @@ public class SoporteController {
                                 @RequestParam(defaultValue = "0") int page,
                                 @RequestParam(required = false) Long categoriaId,
                                 @RequestParam(required = false) Long prioridadId,
-                                @RequestParam(required = false, defaultValue = "antiguo") String orden) { // Default cambiado a "antiguo"
+                                @RequestParam(required = false, defaultValue = "antiguo") String orden) {
 
         Usuario tecnico = cargarDatosSesion(auth, session);
 
         // Lógica de ordenamiento para SLA (Semáforo):
-        // Por defecto ("antiguo") -> Ascendente (Viejos primero -> Rojos/Amarillos arriba)
-        // Si elige "reciente" -> Descendente (Nuevos primero -> Verdes arriba)
         Sort sort = Sort.by("fechaCreacion").ascending();
 
         if ("reciente".equals(orden)) {
@@ -70,7 +68,8 @@ public class SoporteController {
             sort = Sort.by("prioridad.id").descending();
         }
 
-        Pageable pageable = PageRequest.of(page, 10, sort);
+        // CAMBIO AQUI: Paginación a 15
+        Pageable pageable = PageRequest.of(page, 15, sort);
 
         Specification<Ticket> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -160,12 +159,11 @@ public class SoporteController {
                                         HttpSession session,
                                         @RequestParam(defaultValue = "0") int page,
                                         @RequestParam(required = false) String busqueda,
-                                        @RequestParam(required = false, defaultValue = "antiguo") String orden) { // Default cambiado a "antiguo"
+                                        @RequestParam(required = false, defaultValue = "antiguo") String orden) {
 
         cargarDatosSesion(auth, session);
 
-        // Lógica de ordenamiento para SLA (Semáforo) en Bolsa:
-        Sort sort = Sort.by("fechaCreacion").ascending(); // Por defecto: Viejos arriba
+        Sort sort = Sort.by("fechaCreacion").ascending();
 
         if ("reciente".equals(orden)) {
             sort = Sort.by("fechaCreacion").descending();
@@ -173,7 +171,8 @@ public class SoporteController {
             sort = Sort.by("prioridad.id").descending();
         }
 
-        Pageable pageable = PageRequest.of(page, 10, sort);
+        // CAMBIO AQUI: Paginación a 15
+        Pageable pageable = PageRequest.of(page, 15, sort);
 
         Specification<Ticket> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -332,7 +331,8 @@ public class SoporteController {
 
         List<String> estadosHistorial = Arrays.asList("RESUELTO", "CANCELADO", "CERRADO", "ESCALADO", "NO_RESUELTO");
 
-        Pageable pageable = PageRequest.of(page, 10, Sort.by("fechaCreacion").descending());
+        // CAMBIO AQUI: Paginación a 15
+        Pageable pageable = PageRequest.of(page, 15, Sort.by("fechaCreacion").descending());
 
         Page<Ticket> historialPage = ticketRepository.findHistorialExactoPorTecnico(tecnico.getId(), estadosHistorial, pageable);
 

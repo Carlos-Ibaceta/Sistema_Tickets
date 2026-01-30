@@ -121,10 +121,9 @@ public class AdminController {
     public String verTicketsGlobales(Model model,
                                      @RequestParam(required = false) Long departamentoId,
                                      @RequestParam(required = false) Long prioridadId,
-                                     @RequestParam(required = false, defaultValue = "antiguos") String orden, // Default cambiado
+                                     @RequestParam(required = false, defaultValue = "antiguos") String orden,
                                      @RequestParam(defaultValue = "0") int page) {
 
-        // Lógica SLA: "antiguos" (default) -> Ascending (Viejos/Rojos primero)
         Sort sort = "recientes".equals(orden) ? Sort.by("fechaCreacion").descending() : Sort.by("fechaCreacion").ascending();
 
         Pageable pageable = PageRequest.of(page, 10, sort);
@@ -193,7 +192,10 @@ public class AdminController {
     public String verDetalleTicket(@PathVariable Long id, Model model, HttpServletRequest request) {
         Ticket ticket = ticketRepository.findById(id).orElseThrow(() -> new RuntimeException("Ticket no encontrado"));
         model.addAttribute("ticket", ticket);
-        model.addAttribute("tecnicos", usuarioRepository.findByRol_NombreRol("SOPORTE"));
+
+        // CORRECCIÓN: Solo mostrar técnicos ACTIVOS en el desplegable
+        model.addAttribute("tecnicos", usuarioRepository.findByRol_NombreRolAndActivoTrue("SOPORTE"));
+
         model.addAttribute("estados", estadoTicketRepository.findAll());
 
         // Enviamos la bandera para saber a dónde debe volver el botón
@@ -234,7 +236,8 @@ public class AdminController {
                         String nombreAdmin = usuarioService.buscarPorEmail(SecurityContextHolder.getContext().getAuthentication().getName())
                                 .map(Usuario::getNombre).orElse("Administrador");
 
-                        List<Usuario> equipoSoporte = usuarioRepository.findByRol_NombreRol("SOPORTE");
+                        // CORRECCIÓN: Notificar solo a técnicos ACTIVOS
+                        List<Usuario> equipoSoporte = usuarioRepository.findByRol_NombreRolAndActivoTrue("SOPORTE");
                         emailService.notificarReaperturaAdmin(equipoSoporte, ticket, nombreAdmin, nombreEstadoAnterior);
                     }
                 }

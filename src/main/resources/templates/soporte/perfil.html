@@ -10,7 +10,7 @@
 
     <style>
         /* =========================================
-           ESTILOS MUNICIPALES UNIFICADOS
+           ESTILOS COMPACTOS (FIX ZOOM)
            ========================================= */
         :root {
             --muni-azul: #003366;
@@ -37,29 +37,35 @@
         /* CONTENIDO PRINCIPAL */
         .main-content { margin-left: var(--sidebar-width); padding: 30px; transition: all 0.3s; min-height: 100vh; }
 
-        /* HEADER DE PÁGINA */
+        /* HEADER DE PÁGINA COMPACTO */
         .header-section {
-            background: white; border-radius: 12px; padding: 20px 25px; margin-bottom: 30px;
+            background: white; border-radius: 12px; padding: 20px 25px; margin-bottom: 25px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid var(--muni-dorado);
             display: flex; justify-content: space-between; align-items: center;
         }
-        .page-title { color: var(--muni-azul); font-weight: 700; margin: 0; }
+        .page-title { color: var(--muni-azul); font-weight: 700; margin: 0; font-size: 1.5rem; }
 
-        /* TARJETA PERFIL */
+        /* TARJETA PERFIL COMPACTA */
         .card-profile { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: none; overflow: hidden; border-top: 4px solid var(--muni-azul); }
-        .profile-header-bg { background-color: #f8f9fa; padding: 30px; text-align: center; border-bottom: 1px solid #e9ecef; }
-        .profile-avatar { width: 100px; height: 100px; background-color: var(--muni-azul); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 15px; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .profile-header-bg { background-color: #f8f9fa; padding: 25px; text-align: center; border-bottom: 1px solid #e9ecef; }
+        .profile-avatar {
+            width: 90px; height: 90px; /* Reducido un poco */
+            background-color: var(--muni-azul); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.2rem; margin: 0 auto 15px; border: 4px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
 
         /* FORMULARIOS */
-        .form-label { font-weight: 600; color: var(--muni-azul-dark); font-size: 0.9rem; }
-        .form-control { padding: 12px; border-radius: 8px; border: 1px solid #ced4da; }
-        .form-control:focus { border-color: var(--muni-azul); box-shadow: 0 0 0 0.25rem rgba(0, 51, 102, 0.15); }
+        .form-label { font-weight: 600; color: var(--muni-azul-dark); font-size: 0.9rem; margin-bottom: 5px; }
+        .form-control { padding: 10px; border-radius: 8px; border: 1px solid #ced4da; font-size: 0.95rem; }
+        .form-control:focus { border-color: var(--muni-azul); box-shadow: 0 0 0 0.2rem rgba(0, 51, 102, 0.15); }
 
         /* BOTONES */
-        .btn-muni { background-color: var(--muni-azul); color: white; border: none; padding: 12px; font-weight: 600; border-radius: 8px; transition: all 0.3s; width: 100%; }
+        .btn-muni { background-color: var(--muni-azul); color: white; border: none; padding: 10px; font-weight: 600; border-radius: 8px; transition: all 0.3s; width: 100%; font-size: 0.95rem; }
         .btn-muni:hover { background-color: var(--muni-azul-dark); color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
 
-        .btn-security { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 12px; font-weight: 600; border-radius: 8px; width: 100%; transition: 0.3s; display: flex; align-items: center; justify-content: center; }
+        .btn-security { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 10px; font-weight: 600; border-radius: 8px; width: 100%; transition: 0.3s; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
         .btn-security:hover { background-color: #ffecb5; color: #533f03; }
 
         @media (max-width: 992px) {

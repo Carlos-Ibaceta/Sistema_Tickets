@@ -10,10 +10,12 @@
 
   <style>
     /* =========================================
-       ESTILOS MUNICIPALES UNIFICADOS
+       ESTILOS COMPACTOS (FIX ZOOM)
        ========================================= */
     :root { --muni-azul: #003366; --muni-azul-dark: #002244; --muni-dorado: #c5a059; --muni-gris-fondo: #f4f6f9; --sidebar-width: 260px; }
     body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--muni-gris-fondo); overflow-x: hidden; }
+
+    /* SIDEBAR */
     .sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: var(--sidebar-width); background: linear-gradient(180deg, var(--muni-azul) 0%, var(--muni-azul-dark) 100%); color: white; transition: all 0.3s; z-index: 1000; box-shadow: 4px 0 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
     .sidebar-header { padding: 20px; text-align: center; background-color: white; border-bottom: 1px solid rgba(0,0,0,0.1); }
     .logo-img { max-height: 80px; width: auto; }
@@ -24,27 +26,43 @@
     .menu-item a.active { background-color: var(--muni-dorado); color: var(--muni-azul-dark); font-weight: 700; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
     .menu-item i, .btn-logout-menu i { width: 25px; text-align: center; margin-right: 10px; }
     .menu-separator { border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 10px; }
+
+    /* MAIN CONTENT */
     .main-content { margin-left: var(--sidebar-width); padding: 30px; transition: all 0.3s; min-height: 100vh; }
-    .header-section { background: white; border-radius: 12px; padding: 20px 25px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid var(--muni-dorado); display: flex; justify-content: space-between; align-items: center; }
-    .page-title { color: var(--muni-azul); font-weight: 700; margin: 0; }
+
+    /* HEADER COMPACTO */
+    .header-section { background: white; border-radius: 12px; padding: 15px 25px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid var(--muni-dorado); display: flex; justify-content: space-between; align-items: center; }
+    .page-title { color: var(--muni-azul); font-weight: 700; margin: 0; font-size: 1.3rem; }
+
+    /* GESTION CARD COMPACTA */
     .gestion-card { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); overflow: hidden; border: none; }
-    .gestion-card-header { background-color: var(--muni-azul); padding: 25px 30px; border-bottom: 4px solid var(--muni-dorado); }
-    .gestion-card-header h4 { color: white; margin: 0; font-weight: 600; font-size: 1.25rem; }
-    .gestion-card-header .ticket-id { background-color: rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 6px; font-size: 0.95rem; margin-left: 10px; letter-spacing: 0.5px; }
-    .gestion-card-body { padding: 35px; }
-    .label-detail { font-size: 0.8rem; text-transform: uppercase; color: #6c757d; font-weight: 700; margin-bottom: 5px; letter-spacing: 0.5px; }
-    .value-detail { font-size: 1rem; color: #212529; font-weight: 500; display: flex; align-items: center; }
-    .value-detail i { color: var(--muni-azul); margin-right: 8px; width: 20px; text-align: center; }
-    .desc-box { background-color: #f8f9fa; border: 1px solid #e9ecef; border-left: 4px solid #ced4da; padding: 20px; border-radius: 6px; margin-top: 20px; color: #495057; line-height: 1.6; }
-    .badge-status-lg { padding: 8px 16px; border-radius: 30px; font-weight: 600; font-size: 0.85rem; display: inline-flex; align-items: center; }
-    .btn-action { background-color: var(--muni-azul); color: white; padding: 10px 25px; border-radius: 8px; font-weight: 600; border: none; transition: 0.3s; }
+    .gestion-card-header { background-color: var(--muni-azul); padding: 20px 25px; border-bottom: 4px solid var(--muni-dorado); }
+    .gestion-card-header h4 { color: white; margin: 0; font-weight: 700; font-size: 1.1rem; }
+    .gestion-card-header .ticket-id { background-color: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; margin-left: 10px; letter-spacing: 0.5px; }
+
+    .gestion-card-body { padding: 25px; } /* Reducido de 35px */
+
+    /* DETALLES */
+    .label-detail { font-size: 0.75rem; text-transform: uppercase; color: #6c757d; font-weight: 700; margin-bottom: 4px; letter-spacing: 0.5px; }
+    .value-detail { font-size: 0.95rem; color: #212529; font-weight: 500; display: flex; align-items: center; }
+    .value-detail i { color: var(--muni-azul); margin-right: 8px; width: 18px; text-align: center; }
+
+    .desc-box { background-color: #f8f9fa; border: 1px solid #e9ecef; border-left: 4px solid #ced4da; padding: 15px; border-radius: 6px; margin-top: 10px; color: #495057; line-height: 1.5; font-size: 0.95rem; }
+
+    .badge-status-lg { padding: 6px 12px; border-radius: 30px; font-weight: 600; font-size: 0.8rem; display: inline-flex; align-items: center; }
+
+    /* BOTONES */
+    .btn-action { background-color: var(--muni-azul); color: white; padding: 8px 20px; border-radius: 8px; font-weight: 600; border: none; transition: 0.3s; font-size: 0.9rem; }
     .btn-action:hover { background-color: var(--muni-azul-dark); color: white; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-    .btn-back { background-color: white; border: 2px solid #e9ecef; color: #6c757d; padding: 8px 20px; border-radius: 8px; font-weight: 600; text-decoration: none; transition: 0.3s; }
+    .btn-back { background-color: white; border: 2px solid #e9ecef; color: #6c757d; padding: 6px 15px; border-radius: 8px; font-weight: 600; text-decoration: none; transition: 0.3s; font-size: 0.9rem; }
     .btn-back:hover { border-color: #adb5bd; color: #495057; background-color: #f8f9fa; }
-    .timeline-item { position: relative; padding-left: 2rem; padding-bottom: 1.5rem; border-left: 2px solid #e2e8f0; }
+
+    /* TIMELINE */
+    .timeline-item { position: relative; padding-left: 1.5rem; padding-bottom: 1.2rem; border-left: 2px solid #e2e8f0; }
     .timeline-item:last-child { border-left: 2px solid transparent; }
-    .timeline-dot { position: absolute; left: -0.6rem; top: 0; width: 1.2rem; height: 1.2rem; background: white; border: 3px solid var(--muni-azul); border-radius: 50%; }
-    .timeline-content { background: #f8f9fa; padding: 10px 15px; border-radius: 8px; border: 1px solid #e9ecef; }
+    .timeline-dot { position: absolute; left: -0.5rem; top: 0; width: 1rem; height: 1rem; background: white; border: 3px solid var(--muni-azul); border-radius: 50%; }
+    .timeline-content { background: #f8f9fa; padding: 8px 12px; border-radius: 8px; border: 1px solid #e9ecef; font-size: 0.85rem; }
+
     @media (max-width: 992px) { .sidebar { left: -260px; } .sidebar.active { left: 0; } .main-content { margin-left: 0; padding: 20px; } .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 900; } .overlay.active { display: block; } }
 
     /* MODO OSCURO */
@@ -145,15 +163,15 @@
 
         <div class="gestion-card-body">
 
-          <div class="alert alert-warning border-warning border-start border-4 d-flex align-items-center" th:if="${ticket.tecnicoAsignado == null}">
+          <div class="alert alert-warning border-warning border-start border-4 d-flex align-items-center p-3" th:if="${ticket.tecnicoAsignado == null}">
             <i class="fas fa-exclamation-triangle fa-2x me-3 text-warning"></i>
             <div>
-              <h5 class="alert-heading fw-bold mb-0">Ticket Sin Asignar</h5>
+              <h6 class="alert-heading fw-bold mb-0">Ticket Sin Asignar</h6>
               <p class="mb-0 small">Este ticket se encuentra en la bolsa. Revisa la información y tómalo para comenzar a trabajar.</p>
             </div>
           </div>
 
-          <div class="row g-3 mb-4 pb-4 border-bottom">
+          <div class="row g-3 mb-4 pb-3 border-bottom">
             <div class="col-md-3">
               <div class="label-detail">Estado Actual</div>
               <span class="badge-status-lg"
@@ -170,7 +188,7 @@
               <span class="badge"
                     th:classappend="${ticket.prioridad != null && ticket.prioridad.nivelPrioridad == 'ALTA'} ? 'bg-danger' :
                                     (${ticket.prioridad != null && ticket.prioridad.nivelPrioridad == 'MEDIA'} ? 'bg-warning text-dark' : 'bg-info text-dark')"
-                    style="padding: 6px 12px;">
+                    style="padding: 5px 10px; font-size: 0.8rem;">
                     <span th:text="${ticket.prioridad != null ? ticket.prioridad.nivelPrioridad : 'Sin Asignar'}">NORMAL</span>
               </span>
             </div>
@@ -223,9 +241,9 @@
                     <i class="fas fa-folder me-1"></i> <span th:text="${ticket.categoria != null ? ticket.categoria.nombreCategoria : 'Sin Categoría'}">Cat</span>
                 </span>
 
-                <span class="badge bg-white text-dark border shadow-sm" th:if="${ticket.subcategoria != null}">
+                <span class="badge bg-white border shadow-sm" th:if="${ticket.subcategoria != null}">
                     <i class="fas fa-level-up-alt fa-rotate-90 me-2 text-muted"></i>
-                    <span th:text="${ticket.subcategoria.nombreSubcategoria}">Sub</span>
+                    <span class="text-dark" th:text="${ticket.subcategoria.nombreSubcategoria}">Sub</span>
                 </span>
               </div>
             </div>
@@ -234,7 +252,7 @@
           <div class="mb-4">
             <div class="label-detail">Descripción del Problema</div>
             <div class="desc-box">
-              <p class="mb-0" th:text="${ticket.descripcion}">Descripción detallada del incidente...</p>
+              <p class="mb-0 text-break" th:text="${ticket.descripcion}">Descripción detallada del incidente...</p>
             </div>
           </div>
 
@@ -246,7 +264,7 @@
               </div>
               <div class="flex-grow-1">
                 <h6 class="mb-0 text-dark fw-bold">Captura del Error</h6>
-                <small class="text-muted" th:text="${ticket.evidencia}"></small>
+                <small class="text-muted text-break" th:text="${ticket.evidencia}"></small>
               </div>
               <div>
                 <button type="button" class="btn btn-sm btn-outline-primary fw-bold"
@@ -264,7 +282,7 @@
               <div class="timeline-item" th:each="audit : ${ticket.auditorias}">
                 <div class="timeline-dot"></div>
                 <div class="timeline-content shadow-sm">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div class="d-flex justify-content-between align-items-center mb-1">
                     <span class="fw-bold text-primary" th:text="${audit.usuarioAccion}">Usuario</span>
                     <small class="text-muted">
                       <i class="far fa-clock me-1"></i>
@@ -298,14 +316,15 @@
             </span>
 
             <button th:if="${ticket.tecnicoAsignado == null}"
-                    class="btn btn-success btn-lg fw-bold shadow-sm"
+                    class="btn btn-success fw-bold shadow-sm btn-action"
+                    style="width: auto; padding-left: 20px; padding-right: 20px;"
                     onclick="abrirModalClasificar('asignar')">
               <i class="fas fa-hand-paper me-2"></i> Clasificar y Tomar Ticket
             </button>
 
             <a th:if="${ticket.tecnicoAsignado != null && ticket.estadoTicket.nombreEstado != 'RESUELTO' && ticket.estadoTicket.nombreEstado != 'CANCELADO'}"
                th:href="@{/soporte/gestion/{id}(id=${ticket.id})}"
-               class="btn-action">
+               class="btn-action" style="width: auto; padding-left: 20px; padding-right: 20px;">
               <i class="fas fa-tools me-2"></i> Gestionar Ticket
             </a>
           </div>

@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
     <style>
+        /* =========================================
+           ESTILOS COMPACTOS (FIX ZOOM)
+           ========================================= */
         :root {
             --muni-azul: #003366;
             --muni-azul-dark: #002244;
@@ -32,38 +35,56 @@
 
         /* MAIN CONTENT */
         .main-content { margin-left: var(--sidebar-width); padding: 30px; transition: all 0.3s; min-height: 100vh; }
+
+        /* HEADER */
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; background: white; padding: 20px 25px; border-radius: 10px; border-left: 5px solid var(--muni-dorado); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .page-title { font-size: 1.5rem; font-weight: 700; color: var(--muni-azul); margin: 0; }
 
-        /* FILTER BAR */
-        .filter-bar { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 25px; }
-        .filter-label { font-weight: 700; color: var(--muni-azul); font-size: 0.85rem; margin-bottom: 5px; display: block; }
-        .form-select-custom { border: 1px solid #e0e0e0; border-radius: 6px; padding: 10px; font-size: 0.9rem; }
+        /* FILTER BAR COMPACTO */
+        .filter-bar { background: white; padding: 15px 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .filter-label { font-weight: 700; color: var(--muni-azul); font-size: 0.8rem; margin-bottom: 5px; display: block; }
+        .form-select-custom { border: 1px solid #e0e0e0; border-radius: 6px; padding: 8px; font-size: 0.9rem; }
 
-        /* TABLE */
-        .content-card { background: white; border-radius: 10px; padding: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .table-custom thead th { background-color: var(--muni-azul); color: white; border: none; padding: 15px; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; }
-        .table-custom tbody td { vertical-align: middle; padding: 15px; border-bottom: 1px solid #f0f0f0; color: #444; }
+        /* TABLA COMPACTA */
+        .content-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+        .table-custom { margin-bottom: 0; font-size: 0.85rem; }
+        .table-custom thead th {
+            background-color: var(--muni-azul); color: white; border: none;
+            padding: 10px 15px; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px;
+        }
+        .table-custom tbody td {
+            vertical-align: middle; padding: 8px 15px; border-bottom: 1px solid #f0f0f0; color: #444;
+        }
+
+        /* TRUNCAR TEXTO (FIX ASUNTOS LARGOS) */
+        .texto-limitado {
+            max-width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
 
         /* BADGES */
-        .badge-pill { padding: 6px 12px; border-radius: 50px; font-weight: 600; font-size: 0.75rem; }
+        .badge-pill { padding: 5px 10px; border-radius: 50px; font-weight: 600; font-size: 0.7rem; }
         .badge-ingresado { background-color: #e3f2fd; color: #1565c0; }
         .badge-proceso { background-color: #fff3e0; color: #ef6c00; }
         .badge-alta { background-color: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
         .badge-media { background-color: #fff8e1; color: #f57f17; border: 1px solid #ffecb3; }
         .badge-baja { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
 
-        .tech-avatar { width: 30px; height: 30px; background-color: var(--muni-azul); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; margin-right: 8px; }
+        .tech-avatar { width: 28px; height: 28px; background-color: var(--muni-azul); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; margin-right: 8px; }
         .unassigned-avatar { background-color: #e0e0e0; color: #757575; }
 
-        .btn-action { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; border: none; transition: all 0.2s; }
+        .btn-action { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; border: none; transition: all 0.2s; font-size: 0.8rem; }
         .btn-view { background-color: #e3f2fd; color: var(--muni-azul); }
         .btn-view:hover { background-color: var(--muni-azul); color: white; }
         .btn-delete { background-color: #ffebee; color: #c62828; }
         .btn-delete:hover { background-color: #c62828; color: white; }
 
         /* PAGINACIÓN */
-        .pagination .page-link { color: var(--muni-azul); border: none; margin: 0 3px; border-radius: 5px; font-weight: 600; }
+        .pagination .page-link { color: var(--muni-azul); border: none; margin: 0 3px; border-radius: 5px; font-weight: 600; font-size: 0.9rem; }
         .pagination .page-link:hover { background-color: #e9ecef; color: var(--muni-azul-dark); }
         .pagination .page-item.active .page-link { background-color: var(--muni-azul); color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .pagination .page-item.disabled .page-link { color: #ccc; background-color: transparent; }
@@ -170,10 +191,10 @@
                 <button class="btn btn-outline-secondary d-lg-none me-3" id="sidebarToggle"><i class="fas fa-bars"></i></button>
                 <h2 class="page-title"><i class="fas fa-globe-americas me-2"></i>Tickets Activos</h2>
             </div>
-            <p class="text-muted mb-0 ms-lg-0 ms-5 ps-lg-0 ps-3">Gestión de tickets pendientes y en proceso (Sala de Guerra)</p>
+            <p class="text-muted mb-0 ms-lg-0 ms-5 ps-lg-0 ps-3 small">Sala de Guerra (Tickets pendientes)</p>
         </div>
         <div>
-            <a th:href="@{/admin/historial-global}" class="btn btn-secondary fw-bold shadow-sm">
+            <a th:href="@{/admin/historial-global}" class="btn btn-secondary btn-sm fw-bold shadow-sm">
                 <i class="fas fa-history me-2"></i> Ver Historial Completo
             </a>
         </div>
@@ -183,7 +204,7 @@
 
     <div class="filter-bar">
         <form th:action="@{/admin/tickets-globales}" method="get">
-            <div class="row align-items-end">
+            <div class="row align-items-end g-2">
                 <div class="col-md-3">
                     <label class="filter-label"><i class="fas fa-building me-1"></i> Departamento</label>
                     <select class="form-select form-select-custom" name="departamentoId">
@@ -212,10 +233,10 @@
                     </select>
                 </div>
                 <div class="col-md-3 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary w-100 fw-bold" style="background-color: var(--muni-azul); border:none; padding: 10px;">
+                    <button type="submit" class="btn btn-primary w-100 fw-bold btn-sm" style="background-color: var(--muni-azul); border:none; padding: 10px;">
                         <i class="fas fa-filter me-2"></i> Filtrar
                     </button>
-                    <a th:href="@{/admin/tickets-globales}" class="btn btn-light border w-auto" title="Limpiar">
+                    <a th:href="@{/admin/tickets-globales}" class="btn btn-light border w-auto btn-sm d-flex align-items-center" title="Limpiar">
                         <i class="fas fa-undo"></i>
                     </a>
                 </div>
@@ -235,7 +256,7 @@
                     <th>Departamento</th>
                     <th>Estado</th>
                     <th>Prioridad</th>
-                    <th><i class="fas fa-stopwatch"></i> Tiempo SLA</th>
+                    <th><i class="fas fa-stopwatch"></i> SLA</th>
                     <th>Técnico</th>
                     <th class="text-end">Acciones</th>
                 </tr>
@@ -252,14 +273,19 @@
                 <tr th:each="t : ${tickets}">
                     <td class="fw-bold" th:text="'#' + ${t.id}"></td>
 
-                    <td th:text="${t.asunto}"></td>
+                    <td>
+                        <div class="texto-limitado" th:text="${t.asunto}" th:title="${t.asunto}">
+                            Asunto Ticket
+                        </div>
+                    </td>
+
                     <td>
                         <div class="d-flex align-items-center">
                             <i class="fas fa-user text-secondary me-2 small"></i>
-                            <span th:text="${t.usuario.nombre}"></span>
+                            <span class="small" th:text="${t.usuario.nombre}"></span>
                         </div>
                     </td>
-                    <td class="small text-muted" th:text="${t.fechaCreacion != null ? #temporals.format(t.fechaCreacion, 'dd/MM/yyyy HH:mm') : '-'}"></td>
+                    <td class="small text-muted" th:text="${t.fechaCreacion != null ? #temporals.format(t.fechaCreacion, 'dd/MM HH:mm') : '-'}"></td>
 
                     <td>
                         <span class="badge bg-light text-dark border"
@@ -286,8 +312,7 @@
                     </td>
 
                     <td>
-                        <span class="badge bg-white text-dark border shadow-sm" style="font-family: monospace; font-size: 0.85rem;">
-                            <i class="far fa-clock text-secondary me-1"></i>
+                        <span class="badge bg-white text-dark border shadow-sm" style="font-family: monospace; font-size: 0.75rem;">
                             <span th:text="${t.tiempoTranscurrido}">---</span>
                         </span>
                     </td>
@@ -299,7 +324,7 @@
                         </div>
                         <div class="d-flex align-items-center" th:if="${t.tecnicoAsignado == null}">
                             <div class="tech-avatar unassigned-avatar"><i class="fas fa-question"></i></div>
-                            <small class="text-muted">Sin Asignar</small>
+                            <small class="text-muted">Libre</small>
                         </div>
                     </td>
                     <td class="text-end">

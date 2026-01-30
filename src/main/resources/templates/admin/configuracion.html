@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
     <style>
+        /* =========================================
+           ESTILOS COMPACTOS (FIX ZOOM)
+           ========================================= */
         :root {
             --muni-azul: #003366;
             --muni-azul-dark: #002244;
@@ -36,21 +39,31 @@
         .page-title { font-size: 1.5rem; font-weight: 700; color: var(--muni-azul); margin: 0; }
 
         /* CONFIG CARD */
-        .config-card { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); min-height: 500px; }
+        .config-card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); min-height: 500px; }
 
         /* TABS PERSONALIZADOS */
-        .nav-pills .nav-link { color: #555; font-weight: 600; padding: 12px 20px; border-radius: 8px; margin-right: 10px; transition: all 0.3s; cursor: pointer; }
+        .nav-pills .nav-link { color: #555; font-weight: 600; padding: 10px 15px; border-radius: 8px; margin-right: 10px; transition: all 0.3s; cursor: pointer; font-size: 0.9rem; }
         .nav-pills .nav-link:hover { background-color: #e9ecef; color: var(--muni-azul); }
         .nav-pills .nav-link.active { background-color: var(--muni-azul); color: white; box-shadow: 0 4px 6px rgba(0,51,102,0.3); }
         .nav-pills .nav-link.active i { color: var(--muni-dorado); }
 
-        /* TABLAS */
-        .table-custom thead th { background-color: var(--muni-azul); color: white; border: none; padding: 15px; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; }
-        .table-custom tbody td { vertical-align: middle; padding: 15px; border-bottom: 1px solid #f0f0f0; color: #444; }
+        /* TABLAS COMPACTAS */
+        .table-custom { margin-bottom: 0; font-size: 0.85rem; }
+        .table-custom thead th {
+            background-color: var(--muni-azul); color: white; border: none;
+            padding: 10px 15px; font-weight: 600; text-transform: uppercase; font-size: 0.8rem;
+        }
+        .table-custom tbody td {
+            vertical-align: middle; padding: 8px 15px; border-bottom: 1px solid #f0f0f0; color: #444;
+        }
+        .table-custom tbody tr:hover { background-color: #fcfcfc; }
 
-        /* ITEMS LIST */
-        .list-group-item { border: 1px solid #f0f0f0; margin-bottom: 5px; border-radius: 8px !important; padding: 15px; transition: all 0.2s; }
-        .list-group-item:hover { background-color: #f8f9fa; transform: translateX(5px); border-left: 3px solid var(--muni-dorado); }
+        /* PAGINACIÓN JS */
+        .pagination-container { display: flex; justify-content: center; margin-top: 20px; }
+        .pagination .page-link { color: var(--muni-azul); border: none; margin: 0 3px; border-radius: 5px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+        .pagination .page-link:hover { background-color: #e9ecef; color: var(--muni-azul-dark); }
+        .pagination .page-item.active .page-link { background-color: var(--muni-azul); color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .pagination .page-item.disabled .page-link { color: #ccc; background-color: transparent; cursor: default; }
 
         @media (max-width: 992px) {
             .sidebar { left: -260px; } .sidebar.active { left: 0; }
@@ -61,45 +74,26 @@
 
         /* --- MODO OSCURO (CONFIG) --- */
         [data-bs-theme="dark"] { --bg-gris: #212529; }
-
-        /* 1. FIX LOGO */
-        [data-bs-theme="dark"] .sidebar-header {
-            background-color: transparent !important;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
+        [data-bs-theme="dark"] .sidebar-header { background-color: transparent !important; border-bottom: 1px solid rgba(255,255,255,0.1); }
         [data-bs-theme="dark"] .logo-img { filter: none; }
-
-        /* 2. Tarjetas y Header */
-        [data-bs-theme="dark"] .page-header,
-        [data-bs-theme="dark"] .config-card { background-color: #343a40 !important; color: #e0e0e0; border-color: #495057; }
-
-        /* Textos */
+        [data-bs-theme="dark"] .page-header, [data-bs-theme="dark"] .config-card { background-color: #343a40 !important; color: #e0e0e0; border-color: #495057; }
         [data-bs-theme="dark"] .page-title { color: #e0e0e0; }
         [data-bs-theme="dark"] .text-dark { color: #e0e0e0 !important; }
-
-        /* Tabs (Pills) */
         [data-bs-theme="dark"] .nav-pills .nav-link { color: #adb5bd; }
         [data-bs-theme="dark"] .nav-pills .nav-link:hover { background-color: #495057; color: white; }
         [data-bs-theme="dark"] .nav-pills .nav-link.active { background-color: var(--muni-azul); color: white; }
-
-        /* List Group */
-        [data-bs-theme="dark"] .list-group-item { background-color: #343a40; border-color: #495057; color: #e0e0e0; }
-        [data-bs-theme="dark"] .list-group-item:hover { background-color: #3e444a; }
-
-        /* Tablas */
         [data-bs-theme="dark"] .table-custom thead th { background-color: #2c3034; color: #e0e0e0; }
         [data-bs-theme="dark"] .table-custom tbody td { color: #cfd2d6; border-bottom-color: #495057; }
-
-        /* Modals */
+        [data-bs-theme="dark"] .table-custom tbody tr:hover { background-color: #3e444a; }
         [data-bs-theme="dark"] .modal-content { background-color: #343a40; color: #e0e0e0; border-color: #495057; }
         [data-bs-theme="dark"] .modal-header { border-bottom-color: #495057; }
         [data-bs-theme="dark"] .modal-footer { background-color: #2c3034; border-top-color: #495057; }
         [data-bs-theme="dark"] .input-group-text { background-color: #212529; border-color: #495057; color: #adb5bd; }
         [data-bs-theme="dark"] .form-control { background-color: #2b3035; border-color: #495057; color: #e0e0e0; }
         [data-bs-theme="dark"] .form-select { background-color: #2b3035; border-color: #495057; color: #e0e0e0; }
-
-        /* Alerts */
         [data-bs-theme="dark"] .bg-info-subtle { background-color: rgba(13, 202, 240, 0.2) !important; color: #6edff6 !important; }
+        [data-bs-theme="dark"] .pagination .page-link { background-color: #343a40; border-color: #495057; color: #e0e0e0; }
+        [data-bs-theme="dark"] .pagination .page-item.active .page-link { background-color: var(--muni-azul); color: white; }
     </style>
 </head>
 <body>
@@ -145,7 +139,7 @@
                 <button class="btn btn-outline-secondary d-lg-none me-3" id="sidebarToggle"><i class="fas fa-bars"></i></button>
                 <h2 class="page-title"><i class="fas fa-cogs me-2"></i>Configuración del Sistema</h2>
             </div>
-            <p class="text-muted mb-0 ms-lg-0 ms-5 ps-lg-0 ps-3">Gestión de departamentos, categorías y parámetros globales</p>
+            <p class="text-muted mb-0 ms-lg-0 ms-5 ps-lg-0 ps-3 small">Gestión de departamentos, categorías y parámetros globales</p>
         </div>
         <div class="d-none d-md-block text-end">
             <div class="small text-muted">Usuario Actual</div>
@@ -197,85 +191,62 @@
 
         <div class="tab-content pt-2">
 
-            <div class="tab-pane fade"
-                 th:classappend="${activeTab == 'deptos' or activeTab == null ? 'show active' : ''}"
-                 id="deptos">
-
-                <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="tab-pane fade" th:classappend="${activeTab == 'deptos' or activeTab == null ? 'show active' : ''}" id="deptos">
+                <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="mb-0 fw-bold text-dark">Listado de Departamentos</h5>
-                    <button class="btn btn-success fw-bold" data-bs-toggle="modal" data-bs-target="#modalNuevoDepto">
+                    <button class="btn btn-success btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#modalNuevoDepto">
                         <i class="fas fa-plus me-2"></i> Nuevo Depto
                     </button>
                 </div>
-
                 <div class="table-responsive rounded-3 border">
-                    <table class="table table-custom table-hover mb-0">
+                    <table class="table table-custom table-hover mb-0" id="tablaDeptos">
                         <thead><tr><th>Nombre del Departamento</th><th class="text-end">Acciones</th></tr></thead>
                         <tbody>
                         <tr th:each="d : ${departamentos}">
-                            <td>
-                                <i class="fas fa-folder text-warning me-2"></i>
-                                <span th:text="${d.nombre}" class="fw-bold text-dark"></span>
-                            </td>
+                            <td><i class="fas fa-folder text-warning me-2"></i> <span th:text="${d.nombre}" class="fw-bold text-dark"></span></td>
                             <td class="text-end">
-                                <a th:href="@{/admin/configuracion/eliminar-depto/{id}(id=${d.id})}"
-                                   class="btn btn-sm btn-outline-danger border-0 rounded-circle"
-                                   title="Eliminar"
-                                   onclick="return confirm('¿ATENCIÓN: Eliminar este departamento podría afectar a los usuarios asignados. ¿Continuar?');">
-                                    <i class="fas fa-trash-alt"></i>
-                                </a>
+                                <a th:href="@{/admin/configuracion/eliminar-depto/{id}(id=${d.id})}" class="btn btn-sm btn-outline-danger border-0 rounded-circle" onclick="return confirm('¿Eliminar departamento?');"><i class="fas fa-trash-alt"></i></a>
                             </td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
+                <div id="paginacionDeptos" class="pagination-container"></div>
             </div>
 
-            <div class="tab-pane fade"
-                 th:classappend="${activeTab == 'cats' ? 'show active' : ''}"
-                 id="cats">
-
-                <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="tab-pane fade" th:classappend="${activeTab == 'cats' ? 'show active' : ''}" id="cats">
+                <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="mb-0 fw-bold text-dark">Categorías de Tickets</h5>
-                    <button class="btn btn-success fw-bold" data-bs-toggle="modal" data-bs-target="#modalNuevaCat">
+                    <button class="btn btn-success btn-sm fw-bold" data-bs-toggle="modal" data-bs-target="#modalNuevaCat">
                         <i class="fas fa-plus me-2"></i> Nueva Categoría
                     </button>
                 </div>
-
-                <div class="alert alert-info border-0 bg-info-subtle text-info-emphasis mb-4">
+                <div class="alert alert-info border-0 bg-info-subtle text-info-emphasis mb-3 py-2 small">
                     <i class="fas fa-info-circle me-2"></i> Las categorías ayudan a clasificar automáticamente los reportes.
                 </div>
-
-                <div class="list-group">
-                    <div th:each="c : ${categorias}" class="list-group-item d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center">
-                            <div class="me-3 bg-light rounded-circle p-2 text-primary">
-                                <i class="fas fa-tag"></i>
-                            </div>
-                            <span th:text="${c.nombreCategoria}" class="fw-bold"></span>
-                        </div>
-
-                        <a th:href="@{/admin/configuracion/eliminar-cat/{id}(id=${c.id})}"
-                           class="btn btn-sm btn-outline-danger border-0 rounded-circle"
-                           title="Eliminar"
-                           onclick="return confirm('¿Estás seguro de eliminar esta categoría? Si hay tickets usándola, podría dar error.');">
-                            <i class="fas fa-trash-alt"></i>
-                        </a>
-                    </div>
+                <div class="table-responsive rounded-3 border">
+                    <table class="table table-custom table-hover mb-0" id="tablaCats">
+                        <thead><tr><th>Nombre Categoría</th><th class="text-end">Acciones</th></tr></thead>
+                        <tbody>
+                        <tr th:each="c : ${categorias}">
+                            <td><i class="fas fa-tag text-primary me-2"></i> <span th:text="${c.nombreCategoria}" class="fw-bold"></span></td>
+                            <td class="text-end">
+                                <a th:href="@{/admin/configuracion/eliminar-cat/{id}(id=${c.id})}" class="btn btn-sm btn-outline-danger border-0 rounded-circle" onclick="return confirm('¿Eliminar categoría?');"><i class="fas fa-trash-alt"></i></a>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
                 </div>
+                <div id="paginacionCats" class="pagination-container"></div>
             </div>
 
-            <div class="tab-pane fade"
-                 th:classappend="${activeTab == 'subcats' ? 'show active' : ''}"
-                 id="subcats">
-
+            <div class="tab-pane fade" th:classappend="${activeTab == 'subcats' ? 'show active' : ''}" id="subcats">
                 <div class="row">
                     <div class="col-md-4">
                         <div class="card shadow-sm border-0 mb-4 mb-md-0">
                             <div class="card-body">
                                 <h6 class="fw-bold mb-3 text-primary"><i class="fas fa-plus-circle me-2"></i>Nueva Subcategoría</h6>
                                 <form th:action="@{/admin/configuracion/subcategorias/guardar}" method="post">
-
                                     <div class="mb-3">
                                         <label class="form-label small fw-bold text-muted">Categoría Padre</label>
                                         <select name="categoriaId" class="form-select" required>
@@ -283,82 +254,54 @@
                                             <option th:each="c : ${categorias}" th:value="${c.id}" th:text="${c.nombreCategoria}"></option>
                                         </select>
                                     </div>
-
                                     <div class="mb-3">
-                                        <label class="form-label small fw-bold text-muted">Nombre Subcategoría</label>
+                                        <label class="form-label small fw-bold text-muted">Nombre</label>
                                         <input type="text" name="nombreSubcategoria" class="form-control" placeholder="Ej: PC Lento" required>
                                     </div>
-
-                                    <button type="submit" class="btn btn-primary w-100 fw-bold">
-                                        <i class="fas fa-save me-1"></i> Guardar Subcategoría
-                                    </button>
+                                    <button type="submit" class="btn btn-primary w-100 fw-bold btn-sm">Guardar</button>
                                 </form>
                             </div>
                         </div>
                     </div>
-
                     <div class="col-md-8">
                         <div class="card shadow-sm border-0">
-                            <div class="card-header bg-light border-bottom">
-                                <h6 class="mb-0 fw-bold text-dark"><i class="fas fa-list me-2"></i>Listado Actual</h6>
+                            <div class="card-header bg-light border-bottom py-2">
+                                <h6 class="mb-0 fw-bold text-dark small"><i class="fas fa-list me-2"></i>Listado Actual</h6>
                             </div>
                             <div class="card-body p-0">
                                 <div class="table-responsive">
-                                    <table class="table table-hover mb-0 align-middle">
+                                    <table class="table table-hover mb-0 align-middle table-custom" id="tablaSubcats">
                                         <thead class="table-light">
                                         <tr>
                                             <th class="ps-4">Subcategoría</th>
-                                            <th>Pertenece a</th>
-                                            <th>Prioridad Defecto</th>
+                                            <th>Padre</th>
                                             <th class="text-end pe-4">Acción</th>
                                         </tr>
                                         </thead>
                                         <tbody>
                                         <tr th:each="sub : ${subcategorias}">
                                             <td class="ps-4 fw-bold text-dark" th:text="${sub.nombreSubcategoria}">Nombre</td>
-                                            <td>
-                                                <span class="badge bg-white text-dark border" th:text="${sub.categoria.nombreCategoria}">Padre</span>
-                                            </td>
-                                            <td>
-                                                <span class="badge"
-                                                      th:if="${sub.prioridadDefecto != null}"
-                                                      th:classappend="${sub.prioridadDefecto.nivelPrioridad == 'ALTA'} ? 'bg-danger' :
-                                                                     (${sub.prioridadDefecto.nivelPrioridad == 'MEDIA'} ? 'bg-warning text-dark' : 'bg-info text-dark')"
-                                                      th:text="${sub.prioridadDefecto.nivelPrioridad}">
-                                                </span>
-                                                <span class="badge bg-secondary" th:if="${sub.prioridadDefecto == null}">Sin Prioridad</span>
-                                            </td>
+                                            <td><span class="badge bg-light text-dark border" th:text="${sub.categoria.nombreCategoria}">Padre</span></td>
                                             <td class="text-end pe-4">
-                                                <a th:href="@{/admin/configuracion/eliminar-subcat/{id}(id=${sub.id})}"
-                                                   class="btn btn-sm btn-outline-danger border-0"
-                                                   onclick="return confirm('¿Eliminar subcategoría? Esto podría afectar reportes históricos.');">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </a>
+                                                <a th:href="@{/admin/configuracion/eliminar-subcat/{id}(id=${sub.id})}" class="btn btn-sm btn-outline-danger border-0" onclick="return confirm('¿Eliminar?');"><i class="fas fa-trash-alt"></i></a>
                                             </td>
-                                        </tr>
-                                        <tr th:if="${#lists.isEmpty(subcategorias)}">
-                                            <td colspan="4" class="text-center py-4 text-muted small">No hay subcategorías registradas.</td>
                                         </tr>
                                         </tbody>
                                     </table>
                                 </div>
+                                <div id="paginacionSubcats" class="pagination-container pb-3"></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="tab-pane fade"
-                 th:classappend="${activeTab == 'prio' ? 'show active' : ''}"
-                 id="prio">
-
+            <div class="tab-pane fade" th:classappend="${activeTab == 'prio' ? 'show active' : ''}" id="prio">
                 <h5 class="mb-3 fw-bold text-dark">Niveles de Prioridad</h5>
                 <div class="list-group">
                     <div th:each="p : ${prioridades}" class="list-group-item d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center">
-                            <i class="fas fa-circle me-3"
-                               th:classappend="${p.nivelPrioridad == 'ALTA' ? 'text-danger' : (p.nivelPrioridad == 'MEDIA' ? 'text-warning' : 'text-success')}">
-                            </i>
+                            <i class="fas fa-circle me-3" th:classappend="${p.nivelPrioridad == 'ALTA' ? 'text-danger' : (p.nivelPrioridad == 'MEDIA' ? 'text-warning' : 'text-success')}"></i>
                             <span th:text="${p.nivelPrioridad}" class="fw-bold"></span>
                         </div>
                         <span class="badge bg-secondary rounded-pill">Sistema</span>
@@ -379,11 +322,8 @@
             <form th:action="@{/admin/configuracion/departamentos/guardar}" method="post">
                 <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label for="nombreDepto" class="form-label fw-bold">Nombre</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="fas fa-signature"></i></span>
-                            <input type="text" class="form-control" id="nombreDepto" name="nombre" required placeholder="Ej: Operaciones, Finanzas...">
-                        </div>
+                        <label class="form-label fw-bold">Nombre</label>
+                        <input type="text" class="form-control" name="nombre" required placeholder="Ej: Operaciones">
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
@@ -405,11 +345,8 @@
             <form th:action="@{/admin/configuracion/categorias/guardar}" method="post">
                 <div class="modal-body p-4">
                     <div class="mb-3">
-                        <label for="nombreCat" class="form-label fw-bold">Nombre de Categoría</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="fas fa-heading"></i></span>
-                            <input type="text" class="form-control" id="nombreCat" name="nombreCategoria" required placeholder="Ej: Medio Ambiente, Tránsito...">
-                        </div>
+                        <label class="form-label fw-bold">Nombre</label>
+                        <input type="text" class="form-control" name="nombreCategoria" required placeholder="Ej: Medio Ambiente">
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
@@ -433,14 +370,75 @@
             toggle.addEventListener('click', (e) => { e.stopPropagation(); sidebar.classList.toggle('active'); overlay.classList.toggle('active'); });
             overlay.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
         }
+
+        // --- INICIAR PAGINACIÓN JS AUTOMÁTICA ---
+        paginarTabla('tablaDeptos', 'paginacionDeptos', 10);
+        paginarTabla('tablaCats', 'paginacionCats', 10);
+        paginarTabla('tablaSubcats', 'paginacionSubcats', 10);
     });
+
+    // FUNCIÓN DE PAGINACIÓN FRONTEND (Simula Page de Spring)
+    function paginarTabla(tablaId, paginacionId, filasPorPagina) {
+        const tabla = document.getElementById(tablaId);
+        const contenedorPaginacion = document.getElementById(paginacionId);
+        if (!tabla || !contenedorPaginacion) return;
+
+        const tbody = tabla.querySelector('tbody');
+        const filas = Array.from(tbody.querySelectorAll('tr'));
+        const totalFilas = filas.length;
+        const totalPaginas = Math.ceil(totalFilas / filasPorPagina);
+
+        if (totalPaginas <= 1) return; // No paginar si es poco
+
+        function mostrarPagina(pagina) {
+            const inicio = (pagina - 1) * filasPorPagina;
+            const fin = inicio + filasPorPagina;
+
+            filas.forEach((fila, index) => {
+                fila.style.display = (index >= inicio && index < fin) ? '' : 'none';
+            });
+            generarBotones(pagina);
+        }
+
+        function generarBotones(paginaActual) {
+            contenedorPaginacion.innerHTML = '';
+            const ul = document.createElement('ul');
+            ul.className = 'pagination mb-0';
+
+            // Anterior
+            const liPrev = document.createElement('li');
+            liPrev.className = `page-item ${paginaActual === 1 ? 'disabled' : ''}`;
+            liPrev.innerHTML = `<a class="page-link" href="#">Anterior</a>`;
+            liPrev.onclick = (e) => { e.preventDefault(); if(paginaActual > 1) mostrarPagina(paginaActual - 1); };
+            ul.appendChild(liPrev);
+
+            // Números
+            for (let i = 1; i <= totalPaginas; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === paginaActual ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                li.onclick = (e) => { e.preventDefault(); mostrarPagina(i); };
+                ul.appendChild(li);
+            }
+
+            // Siguiente
+            const liNext = document.createElement('li');
+            liNext.className = `page-item ${paginaActual === totalPaginas ? 'disabled' : ''}`;
+            liNext.innerHTML = `<a class="page-link" href="#">Siguiente</a>`;
+            liNext.onclick = (e) => { e.preventDefault(); if(paginaActual < totalPaginas) mostrarPagina(paginaActual + 1); };
+            ul.appendChild(liNext);
+
+            contenedorPaginacion.appendChild(ul);
+        }
+
+        mostrarPagina(1);
+    }
 
     // --- MODO OSCURO LOGIC ---
     function toggleTema() {
         const html = document.documentElement;
         const currentTheme = html.getAttribute('data-bs-theme');
         const icon = document.getElementById('themeIcon');
-
         if (currentTheme === 'dark') {
             html.setAttribute('data-bs-theme', 'light');
             if(icon) icon.className = 'fas fa-moon text-warning';
@@ -451,15 +449,12 @@
             localStorage.setItem('theme', 'dark');
         }
     }
-
     (function() {
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-bs-theme', savedTheme);
         document.addEventListener('DOMContentLoaded', () => {
             const icon = document.getElementById('themeIcon');
-            if (icon && savedTheme === 'dark') {
-                icon.className = 'fas fa-sun text-warning';
-            }
+            if (icon && savedTheme === 'dark') { icon.className = 'fas fa-sun text-warning'; }
         });
     })();
 </script>

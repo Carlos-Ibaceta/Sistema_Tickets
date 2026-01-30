@@ -11,17 +11,21 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     Optional<Usuario> findByEmail(String email);
 
-    // Método antiguo para listas (se mantiene)
+    // Método antiguo (trae todos, activos e inactivos) - SE MANTIENE por compatibilidad
     List<Usuario> findByRol_NombreRol(String nombreRol);
+
+    // --- NUEVO MÉTODO CRÍTICO (FILTRA SOLO ACTIVOS) ---
+    // Este es el que usaremos para enviar correos
+    List<Usuario> findByRol_NombreRolAndActivoTrue(String nombreRol);
 
     boolean existsByEmail(String email);
 
     Optional<Usuario> findByResetToken(String resetToken);
 
-    // --- NUEVO: Paginación excluyendo al usuario actual ---
+    // Paginación excluyendo al usuario actual
     Page<Usuario> findByEmailNot(String email, Pageable pageable);
 
-    // --- NUEVOS MÉTODOS PARA RUT ---
+    // Métodos para RUT
     Optional<Usuario> findByRut(String rut);
     boolean existsByRut(String rut);
 }

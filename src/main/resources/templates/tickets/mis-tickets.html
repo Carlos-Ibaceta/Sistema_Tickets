@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
     <style>
+        /* =========================================
+           ESTILOS COMPACTOS (FIX ZOOM)
+           ========================================= */
         :root {
             --muni-azul: #003366;
             --muni-azul-dark: #002244;
@@ -35,33 +38,49 @@
         .main-content { margin-left: var(--sidebar-width); padding: 30px; transition: all 0.3s; min-height: 100vh; }
 
         /* HERO SECTION */
-        .welcome-card { background: linear-gradient(135deg, var(--muni-azul) 0%, #004080 100%); color: white; border-radius: 12px; padding: 30px; margin-bottom: 30px; box-shadow: 0 8px 20px rgba(0, 51, 102, 0.2); position: relative; overflow: hidden; }
+        .welcome-card { background: linear-gradient(135deg, var(--muni-azul) 0%, #004080 100%); color: white; border-radius: 12px; padding: 25px; margin-bottom: 25px; box-shadow: 0 8px 20px rgba(0, 51, 102, 0.2); position: relative; overflow: hidden; }
         .welcome-card::after { content: '\f3ff'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; right: -20px; bottom: -40px; font-size: 10rem; opacity: 0.1; color: white; transform: rotate(-15deg); }
         .btn-crear-ticket { background-color: var(--muni-dorado); color: var(--muni-azul-dark); font-weight: 700; border: none; padding: 10px 25px; border-radius: 30px; transition: all 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.2); position: relative; z-index: 2; text-decoration: none; }
         .btn-crear-ticket:hover { background-color: #d4b06a; transform: translateY(-2px); color: var(--muni-azul-dark); }
 
-        /* TABLE CARD */
+        /* TABLE CARD COMPACTA */
         .table-card { background: white; border-radius: 12px; padding: 0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; border-top: 5px solid var(--muni-azul); }
-        .table-header { padding: 20px 25px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-        .table-custom thead th { background-color: #f8f9fa; color: #555; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px; border-bottom: 2px solid #e9ecef; padding: 15px 20px; }
-        .table-custom tbody td { padding: 15px 20px; vertical-align: middle; border-bottom: 1px solid #f0f0f0; color: #444; font-size: 0.95rem; }
+        .table-header { padding: 15px 25px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+
+        .table-custom { margin-bottom: 0; font-size: 0.85rem; }
+        .table-custom thead th {
+            background-color: #f8f9fa; color: #555; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 0.5px;
+            border-bottom: 2px solid #e9ecef; padding: 10px 15px;
+        }
+        .table-custom tbody td {
+            padding: 8px 15px; vertical-align: middle; border-bottom: 1px solid #f0f0f0; color: #444; font-size: 0.9rem;
+        }
         .table-custom tbody tr:last-child td { border-bottom: none; }
         .table-custom tbody tr:hover { background-color: #f8faff; }
 
+        /* TRUNCAR TEXTO */
+        .texto-limitado {
+            max-width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+
         /* STATUS BADGES */
-        .badge-status { padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 0.75rem; display: inline-flex; align-items: center; }
+        .badge-status { padding: 5px 10px; border-radius: 20px; font-weight: 600; font-size: 0.75rem; display: inline-flex; align-items: center; }
         .badge-status i { margin-right: 5px; font-size: 0.7rem; }
         .status-ingresado { background-color: #e3f2fd; color: #0d47a1; }
         .status-proceso { background-color: #fff3cd; color: #856404; }
         .status-resuelto { background-color: #d1e7dd; color: #0f5132; }
 
         /* BOTONES DE ACCIÓN */
-        .btn-action { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; border: none; transition: all 0.2s; }
+        .btn-action { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; border: none; transition: all 0.2s; font-size: 0.8rem; }
         .btn-view { background-color: #e3f2fd; color: var(--muni-azul); }
         .btn-view:hover { background-color: var(--muni-azul); color: white; }
 
         /* PAGINACIÓN */
-        .pagination .page-link { color: var(--muni-azul); border: none; margin: 0 3px; border-radius: 5px; font-weight: 600; }
+        .pagination .page-link { color: var(--muni-azul); border: none; margin: 0 3px; border-radius: 5px; font-weight: 600; font-size: 0.9rem; }
         .pagination .page-link:hover { background-color: #e9ecef; color: var(--muni-azul-dark); }
         .pagination .page-item.active .page-link { background-color: var(--muni-azul); color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .pagination .page-item.disabled .page-link { color: #ccc; background-color: transparent; }
@@ -176,7 +195,13 @@
                 </tr>
                 <tr th:each="t : ${tickets}">
                     <td><span class="fw-bold text-primary" th:text="'#' + ${t.id}">#1024</span></td>
-                    <td class="fw-bold text-dark" th:text="${t.asunto}">Problema PC</td>
+
+                    <td>
+                        <div class="texto-limitado" th:text="${t.asunto}" th:title="${t.asunto}">
+                            Asunto del Ticket
+                        </div>
+                    </td>
+
                     <td th:text="${#temporals.format(t.fechaCreacion, 'dd/MM/yyyy HH:mm')}">12/12/2025</td>
                     <td>
                         <span th:if="${t.estadoTicket.nombreEstado == 'INGRESADO'}" class="badge-status status-ingresado"><i class="fas fa-clock"></i> Ingresado</span>
@@ -245,7 +270,7 @@
         }
     });
 
-    // --- MODO OSCURO LOGIC (CORREGIDO) ---
+    // --- MODO OSCURO LOGIC ---
     function toggleTema() {
         const html = document.documentElement;
         const currentTheme = html.getAttribute('data-bs-theme');
@@ -262,20 +287,13 @@
         }
     }
 
-    // Aplicar tema al cargar
     (function() {
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-bs-theme', savedTheme);
-
         document.addEventListener('DOMContentLoaded', () => {
             const icon = document.getElementById('themeIcon');
-            if (icon) {
-                // Si el tema es oscuro, mostrar sol (para cambiar a claro). Si es claro, mostrar luna.
-                if (savedTheme === 'dark') {
-                    icon.className = 'fas fa-sun';
-                } else {
-                    icon.className = 'fas fa-moon';
-                }
+            if (icon && savedTheme === 'dark') {
+                icon.className = 'fas fa-sun';
             }
         });
     })();

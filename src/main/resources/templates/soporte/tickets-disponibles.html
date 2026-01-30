@@ -10,7 +10,7 @@
 
     <style>
         /* =========================================
-           ESTILOS MUNICIPALES UNIFICADOS
+           ESTILOS COMPACTOS (FIX ZOOM)
            ========================================= */
         :root {
             --muni-azul: #003366;
@@ -43,9 +43,9 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid var(--muni-dorado);
             display: flex; justify-content: space-between; align-items: center;
         }
-        .page-title { color: var(--muni-azul); font-weight: 700; margin: 0; }
+        .page-title { color: var(--muni-azul); font-weight: 700; margin: 0; font-size: 1.5rem; }
 
-        /* BARRA DE FILTROS (REDSEÑADO) */
+        /* BARRA DE FILTROS */
         .filter-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #e9ecef; }
         .filter-label { font-size: 0.85rem; font-weight: 700; color: var(--muni-azul); margin-bottom: 8px; display: block; }
         .filter-label i { margin-right: 5px; color: var(--muni-dorado); }
@@ -59,21 +59,34 @@
         /* TARJETA DE CONTENIDO */
         .card-muni { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: none; overflow: hidden; padding-bottom: 20px;}
 
-        /* TABLA PERSONALIZADA */
-        .table-custom { margin-bottom: 0; }
-        .table-custom thead th { background-color: #f8f9fa; color: var(--muni-azul); font-weight: 700; border-bottom: 2px solid #e9ecef; padding: 15px 20px; text-transform: uppercase; font-size: 0.85rem; }
-        .table-custom tbody td { padding: 15px 20px; vertical-align: middle; border-bottom: 1px solid #f0f0f0; color: #444; }
+        /* TABLA COMPACTA */
+        .table-custom { margin-bottom: 0; font-size: 0.85rem; }
+        .table-custom thead th {
+            background-color: #f8f9fa; color: var(--muni-azul); font-weight: 700; border-bottom: 2px solid #e9ecef;
+            padding: 10px 15px; text-transform: uppercase; font-size: 0.8rem;
+        }
+        .table-custom tbody td { padding: 8px 15px; vertical-align: middle; border-bottom: 1px solid #f0f0f0; color: #444; }
         .table-custom tbody tr:hover { background-color: #fcfcfc; }
 
+        /* TRUNCAR TEXTO */
+        .texto-limitado {
+            max-width: 220px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+
         /* BADGES */
-        .badge-status { padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 0.75rem; letter-spacing: 0.5px; }
+        .badge-status { padding: 5px 10px; border-radius: 20px; font-weight: 600; font-size: 0.7rem; letter-spacing: 0.5px; }
 
         /* BOTONES */
-        .btn-assign { background-color: #198754; color: white; border: none; font-weight: 600; transition: all 0.3s; border-radius: 6px; padding: 6px 15px; }
+        .btn-assign { background-color: #198754; color: white; border: none; font-weight: 600; transition: all 0.3s; border-radius: 6px; padding: 5px 12px; font-size: 0.8rem; }
         .btn-assign:hover { background-color: #146c43; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(25, 135, 84, 0.2); }
+        .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.75rem; }
 
         /* ESTILOS PAGINACIÓN */
-        .pagination .page-link { color: var(--muni-azul); border: none; margin: 0 3px; border-radius: 5px; font-weight: 600; }
+        .pagination .page-link { color: var(--muni-azul); border: none; margin: 0 3px; border-radius: 5px; font-weight: 600; font-size: 0.9rem; }
         .pagination .page-link:hover { background-color: #e9ecef; color: var(--muni-azul-dark); }
         .pagination .page-item.active .page-link { background-color: var(--muni-azul); color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .pagination .page-item.disabled .page-link { color: #ccc; background-color: transparent; }
@@ -254,7 +267,12 @@
                 <tr th:each="t : ${tickets}">
                     <td class="fw-bold" style="color: var(--muni-azul);" th:text="'#' + ${t.id}">#000</td>
 
-                    <td class="fw-semibold" th:text="${t.asunto}">Problema PC</td>
+                    <td>
+                        <div class="fw-semibold texto-limitado" th:text="${t.asunto}" th:title="${t.asunto}">
+                            Asunto del Ticket
+                        </div>
+                    </td>
+
                     <td>
                         <div class="d-flex align-items-center">
                             <div class="rounded-circle bg-light d-flex justify-content-center align-items-center me-2 text-secondary" style="width:30px;height:30px; font-size: 0.8rem;">

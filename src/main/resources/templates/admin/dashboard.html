@@ -125,13 +125,24 @@
         }
         .card-title-custom { font-size: 1.1rem; font-weight: 700; color: var(--muni-azul); }
 
+        /* --- AJUSTE DE TABLA COMPACTA (FIX ZOOM) --- */
+        .table-custom { font-size: 0.85rem; margin-bottom: 0; }
         .table-custom thead th {
             background-color: var(--muni-azul); color: white;
             font-weight: 600; text-transform: uppercase; font-size: 0.8rem;
-            border: none; padding: 12px;
+            border: none; padding: 10px 15px;
         }
-        .table-custom tbody td { vertical-align: middle; padding: 12px; border-bottom: 1px solid #f0f0f0; }
+        .table-custom tbody td { vertical-align: middle; padding: 8px 15px; border-bottom: 1px solid #f0f0f0; }
         .table-hover tbody tr:hover { background-color: #f8faff; }
+
+        /* --- TRUNCAR TEXTO --- */
+        .texto-limitado {
+            max-width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
 
         /* BOTONES DE ACCIÓN RÁPIDA */
         .action-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
@@ -146,6 +157,26 @@
             transform: translateY(-2px); color: var(--muni-azul);
         }
         .btn-quick-action i { font-size: 1.5rem; margin-right: 15px; color: var(--muni-azul); }
+
+        /* --- ESTILO PARA EL FOLIO (TICKET ID) - FIX CONTRASTE --- */
+        .badge-folio {
+            background-color: #ffffff;       /* Fondo siempre blanco */
+            color: var(--muni-azul) !important; /* Texto siempre AZUL */
+            border: 1px solid #d1d9e6;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: inline-block;
+            min-width: 50px;
+            text-align: center;
+        }
+        /* Ajuste para modo oscuro */
+        [data-bs-theme="dark"] .badge-folio {
+            border-color: #495057;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
 
         @media (max-width: 992px) {
             .sidebar { left: -260px; }
@@ -374,8 +405,16 @@
                 </thead>
                 <tbody>
                 <tr th:each="t : ${ticketsRecientes}">
-                    <td><span class="badge bg-light text-dark border" th:text="'#' + ${t.id}"></span></td>
-                    <td th:text="${t.asunto}"></td>
+                    <td>
+                        <span class="badge-folio" th:text="'#' + ${t.id}">#000</span>
+                    </td>
+
+                    <td>
+                        <div class="texto-limitado" th:text="${t.asunto}" th:title="${t.asunto}">
+                            Asunto del Ticket
+                        </div>
+                    </td>
+
                     <td>
                         <div class="d-flex align-items-center">
                             <div class="bg-light rounded-circle text-secondary d-flex justify-content-center align-items-center me-2" style="width: 25px; height: 25px; font-size: 0.7rem;">

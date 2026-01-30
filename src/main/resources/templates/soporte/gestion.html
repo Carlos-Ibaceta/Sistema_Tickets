@@ -10,7 +10,7 @@
 
     <style>
         /* =========================================
-           ESTILOS MUNICIPALES (CABILDO)
+           ESTILOS COMPACTOS (FIX ZOOM)
            ========================================= */
         :root {
             --muni-azul: #003366;
@@ -39,44 +39,44 @@
 
         /* HEADER DE PÁGINA */
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .page-title { font-weight: 700; color: var(--muni-azul-dark); margin: 0; display: flex; align-items: center; }
+        .page-title { font-weight: 700; color: var(--muni-azul-dark); margin: 0; display: flex; align-items: center; font-size: 1.5rem; }
         .page-title i { color: var(--muni-dorado); margin-right: 10px; }
 
         /* TARJETA CENTRAL DE GESTIÓN */
         .gestion-card { background: white; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); overflow: hidden; border: none; }
 
-        /* Encabezado de la Tarjeta */
-        .gestion-card-header { background-color: var(--muni-azul); padding: 20px 30px; border-bottom: 4px solid var(--muni-dorado); }
-        .gestion-card-header h4 { color: white; margin: 0; font-weight: 600; font-size: 1.25rem; }
+        /* Encabezado Compacto */
+        .gestion-card-header { background-color: var(--muni-azul); padding: 20px 25px; border-bottom: 4px solid var(--muni-dorado); }
+        .gestion-card-header h4 { color: white; margin: 0; font-weight: 700; font-size: 1.2rem; }
         .gestion-card-header .ticket-id { background-color: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 6px; font-size: 0.9rem; margin-left: 10px; }
 
-        .gestion-card-body { padding: 30px; }
+        .gestion-card-body { padding: 25px; }
 
         /* CAJA DE INFORMACIÓN (Resumen del Ticket) */
-        .info-box { background-color: #f8fbff; border: 1px solid #cce5ff; border-radius: 10px; padding: 20px; margin-bottom: 30px; position: relative; }
+        .info-box { background-color: #f8fbff; border: 1px solid #cce5ff; border-radius: 10px; padding: 20px; margin-bottom: 25px; position: relative; }
         .info-box::before { content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 4px; background-color: var(--muni-azul-dark); border-radius: 0 4px 4px 0; }
 
         .info-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: #6c757d; font-weight: 700; margin-bottom: 5px; }
         .info-value { color: var(--muni-azul-dark); font-weight: 700; font-size: 1.1rem; }
-        .info-desc { color: #495057; font-size: 0.95rem; margin-top: 5px; line-height: 1.5; background: white; padding: 10px; border-radius: 6px; border: 1px solid #e9ecef; }
+        .info-desc { color: #495057; font-size: 0.9rem; margin-top: 10px; line-height: 1.5; background: white; padding: 12px; border-radius: 6px; border: 1px solid #e9ecef; }
 
         /* METADATOS EN FILA */
-        .meta-container { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px; }
-        .meta-badge { display: flex; align-items: center; background: white; padding: 6px 12px; border-radius: 20px; border: 1px solid #e9ecef; font-size: 0.85rem; color: #555; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .meta-badge i { color: var(--muni-dorado); margin-right: 8px; }
+        .meta-container { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
+        .meta-badge { display: flex; align-items: center; background: white; padding: 5px 10px; border-radius: 20px; border: 1px solid #e9ecef; font-size: 0.8rem; color: #555; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .meta-badge i { color: var(--muni-dorado); margin-right: 6px; font-size: 0.9rem; }
         .meta-badge strong { margin-left: 5px; color: var(--muni-azul); }
 
         /* FORMULARIO */
-        .form-section-title { font-weight: 700; color: var(--muni-azul); border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 20px; font-size: 1.1rem; }
-        .form-label { font-weight: 600; color: #444; }
-        .form-select, .form-control { padding: 12px; border-radius: 8px; border: 1px solid #ced4da; }
-        .form-select:focus, .form-control:focus { border-color: var(--muni-azul); box-shadow: 0 0 0 0.25rem rgba(0, 51, 102, 0.15); }
+        .form-section-title { font-weight: 700; color: var(--muni-azul); border-bottom: 2px solid #f0f0f0; padding-bottom: 8px; margin-bottom: 20px; font-size: 1rem; text-transform: uppercase; }
+        .form-label { font-weight: 600; color: #444; font-size: 0.9rem; }
+        .form-select, .form-control { padding: 10px; border-radius: 8px; border: 1px solid #ced4da; font-size: 0.95rem; }
+        .form-select:focus, .form-control:focus { border-color: var(--muni-azul); box-shadow: 0 0 0 0.2rem rgba(0, 51, 102, 0.15); }
 
         /* BOTONES */
-        .btn-save { background-color: #198754; color: white; padding: 10px 25px; font-weight: 600; border-radius: 8px; border: none; transition: 0.3s; }
+        .btn-save { background-color: #198754; color: white; padding: 10px 25px; font-weight: 600; border-radius: 8px; border: none; transition: 0.3s; font-size: 0.95rem; }
         .btn-save:hover { background-color: #146c43; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(25, 135, 84, 0.3); }
 
-        .btn-cancel-custom { background-color: #e9ecef; color: #495057; padding: 10px 20px; font-weight: 600; border-radius: 8px; text-decoration: none; transition: 0.3s; }
+        .btn-cancel-custom { background-color: #e9ecef; color: #495057; padding: 10px 20px; font-weight: 600; border-radius: 8px; text-decoration: none; transition: 0.3s; font-size: 0.95rem; }
         .btn-cancel-custom:hover { background-color: #dee2e6; color: #212529; }
 
         @media (max-width: 992px) {
@@ -86,37 +86,22 @@
             .overlay.active { display: block; }
         }
 
-        /* --- MODO OSCURO (CON FIX LOGO) --- */
+        /* --- MODO OSCURO --- */
         [data-bs-theme="dark"] { --muni-gris-fondo: #212529; }
-
-        /* 1. FIX LOGO */
-        [data-bs-theme="dark"] .sidebar-header {
-            background-color: transparent !important;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
+        [data-bs-theme="dark"] .sidebar-header { background-color: transparent !important; border-bottom: 1px solid rgba(255,255,255,0.1); }
         [data-bs-theme="dark"] .logo-img { filter: none; }
-
-        /* 2. Tarjetas y Formularios */
         [data-bs-theme="dark"] .gestion-card { background-color: #343a40 !important; color: #e0e0e0; border-color: #495057; }
-
         [data-bs-theme="dark"] .info-box { background-color: #2b3035; border-color: #495057; }
         [data-bs-theme="dark"] .info-desc { background-color: #343a40; border-color: #495057; color: #e0e0e0; }
-        [data-bs-theme="dark"] .info-value { color: #6ea8fe; } /* Azul claro */
+        [data-bs-theme="dark"] .info-value { color: #6ea8fe; }
         [data-bs-theme="dark"] .info-label { color: #adb5bd; }
-
-        /* Badges de Metadatos */
         [data-bs-theme="dark"] .meta-badge { background-color: #2b3035; border-color: #495057; color: #e0e0e0; }
         [data-bs-theme="dark"] .meta-badge strong { color: #6ea8fe; }
-
-        /* Formulario */
         [data-bs-theme="dark"] .form-section-title { color: #e0e0e0; border-bottom-color: #495057; }
         [data-bs-theme="dark"] .form-label { color: #e0e0e0; }
-        [data-bs-theme="dark"] .form-control,
-        [data-bs-theme="dark"] .form-select { background-color: #2b3035; border-color: #495057; color: #e0e0e0; }
+        [data-bs-theme="dark"] .form-control, [data-bs-theme="dark"] .form-select { background-color: #2b3035; border-color: #495057; color: #e0e0e0; }
         [data-bs-theme="dark"] .input-group-text { background-color: #212529; border-color: #495057; color: #adb5bd; }
         [data-bs-theme="dark"] .page-title { color: #e0e0e0; }
-
-        /* Botón Cancelar Oscuro */
         [data-bs-theme="dark"] .btn-cancel-custom { background-color: #495057; color: #e0e0e0; }
         [data-bs-theme="dark"] .btn-cancel-custom:hover { background-color: #6c757d; }
     </style>
@@ -164,7 +149,7 @@
     <div class="page-header">
         <h2 class="page-title"><i class="fas fa-tools"></i> Centro de Resolución</h2>
         <a th:href="@{/soporte/mis-tickets}" class="btn btn-outline-secondary btn-sm fw-bold">
-            <i class="fas fa-arrow-left me-2"></i> Volver a Mis Tickets
+            <i class="fas fa-arrow-left me-2"></i> Volver
         </a>
     </div>
 

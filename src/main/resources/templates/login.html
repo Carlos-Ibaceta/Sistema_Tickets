@@ -25,20 +25,20 @@
             font-family: 'Segoe UI', system-ui, sans-serif;
         }
 
-        .login-container { width: 100%; max-width: 420px; padding: 15px; }
+        .login-container { width: 100%; max-width: 400px; padding: 20px; }
 
         .card-muni {
             background: white;
             border: none;
-            border-top: 6px solid var(--muni-azul);
+            border-top: 5px solid var(--muni-azul);
             border-radius: 12px;
-            box-shadow: 0 15px 35px rgba(0, 51, 102, 0.15);
-            padding: 2.5rem;
+            box-shadow: 0 10px 25px rgba(0, 51, 102, 0.1);
+            padding: 2rem;
         }
 
         .muni-logo {
             width: auto;
-            max-height: 140px;
+            max-height: 100px;
             margin-bottom: 1.5rem;
             display: block;
             margin-left: auto;
@@ -47,32 +47,36 @@
 
         .login-title {
             color: var(--muni-azul); font-weight: 800; text-align: center;
-            margin-bottom: 0.5rem; text-transform: uppercase; font-size: 1.4rem;
+            margin-bottom: 0.5rem; text-transform: uppercase; font-size: 1.2rem;
         }
 
         .login-subtitle {
-            text-align: center; color: #6c757d; font-size: 0.95rem; margin-bottom: 2rem;
+            text-align: center; color: #6c757d; font-size: 0.9rem; margin-bottom: 1.5rem;
         }
 
         .form-control {
-            border-radius: 8px; padding: 12px 15px; border: 1px solid #ced4da; background-color: #f8f9fa;
+            border-radius: 8px; padding: 10px 15px; border: 1px solid #ced4da; background-color: #f8f9fa; font-size: 0.95rem;
         }
         .form-control:focus {
-            background-color: #fff; border-color: var(--muni-azul); box-shadow: 0 0 0 0.25rem rgba(0, 51, 102, 0.15);
+            background-color: #fff; border-color: var(--muni-azul); box-shadow: 0 0 0 0.2rem rgba(0, 51, 102, 0.15);
         }
-        .form-label { color: var(--muni-azul); font-size: 0.9rem; font-weight: 700; margin-bottom: 5px; display: block; text-align: left; }
+        .form-label { color: var(--muni-azul); font-size: 0.85rem; font-weight: 700; margin-bottom: 5px; display: block; text-align: left; }
+
+        .input-group-text { background-color: white; border-color: #ced4da; color: #6c757d; }
 
         .btn-muni {
             background-color: var(--muni-azul); color: white; border: none;
-            padding: 14px; border-radius: 8px; font-weight: 700; width: 100%;
-            transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 1px; font-size: 1rem;
+            padding: 12px; border-radius: 8px; font-weight: 700; width: 100%;
+            transition: all 0.3s ease; text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.9rem;
         }
         .btn-muni:hover {
-            background-color: var(--muni-azul-claro); transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 51, 102, 0.3); color: white;
+            background-color: var(--muni-azul-claro); transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0, 51, 102, 0.2); color: white;
         }
 
-        .footer-text { text-align: center; margin-top: 2rem; font-size: 0.85rem; color: #6c757d; font-weight: 500; }
+        .footer-text { text-align: center; margin-top: 1.5rem; font-size: 0.8rem; color: #6c757d; font-weight: 500; }
+
+        .alert { font-size: 0.85rem; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -87,21 +91,21 @@
         <h2 class="login-title">Sistema de Tickets</h2>
         <p class="login-subtitle">Plataforma de Soporte Informático</p>
 
-        <div th:if="${error}" class="alert alert-danger small py-2 fade show">
+        <div th:if="${error}" class="alert alert-danger py-2 fade show border-0 bg-danger bg-opacity-10 text-danger">
             <i class="fas fa-exclamation-circle me-2"></i>
             <span th:text="${error}">Credenciales incorrectas</span>
         </div>
 
-        <div th:if="${param.logout}" class="alert alert-info small py-2 fade show">
+        <div th:if="${param.logout}" class="alert alert-info py-2 fade show border-0 bg-info bg-opacity-10 text-info">
             <i class="fas fa-info-circle me-2"></i>Ha cerrado sesión correctamente.
         </div>
-        <div th:if="${mensaje}" class="alert alert-success small py-2 fade show" th:text="${mensaje}"></div>
+        <div th:if="${mensaje}" class="alert alert-success py-2 fade show border-0 bg-success bg-opacity-10 text-success" th:text="${mensaje}"></div>
 
         <form th:action="@{/perform_login}" method="post">
             <div class="mb-3 text-start">
                 <label class="form-label">Correo Institucional</label>
                 <div class="input-group">
-                    <span class="input-group-text bg-white text-muted"><i class="fas fa-envelope"></i></span>
+                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
                     <input type="email" class="form-control" name="email" required placeholder="usuario@municabildo.cl" autofocus>
                 </div>
             </div>
@@ -109,7 +113,7 @@
             <div class="mb-4 text-start">
                 <label class="form-label">Contraseña</label>
                 <div class="input-group">
-                    <span class="input-group-text bg-white text-muted"><i class="fas fa-lock"></i></span>
+                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
                     <input type="password" class="form-control" name="password" required placeholder="••••••••">
                 </div>
             </div>
@@ -119,7 +123,7 @@
             </button>
 
             <div class="text-center mt-3">
-                <a th:href="@{/olvide-password}" class="text-decoration-none small text-muted hover-link">
+                <a th:href="@{/olvide-password}" class="text-decoration-none small text-muted">
                     ¿Olvidó su contraseña?
                 </a>
             </div>
@@ -127,8 +131,8 @@
     </div>
 
     <div class="footer-text">
-        <p class="mb-0">Ilustre Municipalidad de Cabildo</p>
-        <p>&copy; 2026 Departamento de Informática</p>
+        <p class="mb-0 fw-bold">Ilustre Municipalidad de Cabildo</p>
+        <p class="opacity-75">&copy; 2026 Departamento de Informática</p>
     </div>
 </div>
 

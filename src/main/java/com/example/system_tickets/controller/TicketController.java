@@ -52,7 +52,10 @@ public class TicketController {
     public String misTickets(Model model, Authentication auth, HttpSession session, @RequestParam(defaultValue = "0") int page) {
         Usuario usuario = cargarDatosSesion(auth, session);
         if (usuario.isCambioPasswordObligatorio()) return "redirect:/obligatorio/cambiar-password";
-        Pageable pageable = PageRequest.of(page, 10, Sort.by("fechaCreacion").descending());
+
+        // Paginación configurada a 15 tickets por página
+        Pageable pageable = PageRequest.of(page, 15, Sort.by("fechaCreacion").descending());
+
         Page<Ticket> ticketsPage = ticketRepository.findByUsuario(usuario, pageable);
         model.addAttribute("tickets", ticketsPage);
         return "tickets/mis-tickets";
@@ -131,10 +134,13 @@ public class TicketController {
             // 6. Guardar Ticket
             Ticket guardado = ticketRepository.save(ticket);
 
-            // 7. Notificaciones (BLINDADO)
+            // 7. Notificaciones (BLINDADO Y FILTRADO POR ACTIVOS)
             try {
                 emailService.notificarCreacionTicketUsuario(guardado);
-                List<Usuario> soportes = usuarioRepository.findByRol_NombreRol("SOPORTE");
+
+                // --- CAMBIO AQUÍ: Usamos el método que filtra solo usuarios ACTIVOS ---
+                List<Usuario> soportes = usuarioRepository.findByRol_NombreRolAndActivoTrue("SOPORTE");
+
                 if (!soportes.isEmpty()) {
                     emailService.notificarNuevoTicketSoporte(soportes, guardado);
                 }
@@ -152,12 +158,11 @@ public class TicketController {
         }
     }
 
-    // --- PERFIL DEL FUNCIONARIO (MODIFICADO) ---
+    // --- PERFIL DEL FUNCIONARIO ---
     @GetMapping("/perfil")
     public String verPerfil(Model model, Authentication auth, HttpSession session) {
         Usuario usuario = cargarDatosSesion(auth, session);
         model.addAttribute("usuario", usuario);
-        // NUEVO: Enviamos la lista de departamentos para el select
         model.addAttribute("departamentos", dropdownService.listarDepartamentos());
         return "tickets/perfil";
     }
@@ -189,8 +194,6 @@ public class TicketController {
 
         original.setNombre(usuario.getNombre());
         original.setEmail(usuario.getEmail());
-
-        // NUEVO: Guardamos el cambio de departamento
         original.setDepartamento(usuario.getDepartamento());
 
         usuarioService.guardarUsuario(original);
@@ -215,7 +218,6 @@ public class TicketController {
             String baseUrl = request.getScheme() + "://" + request.getServerName();
             if (request.getServerPort() != 80 && request.getServerPort() != 443) baseUrl += ":" + request.getServerPort();
 
-            // CORRECCIÓN: Agregado request.getContextPath() para soportar subcarpetas
             String link = baseUrl + request.getContextPath() + "/restablecer?token=" + token;
 
             String cuerpo = "Hola " + usuario.getNombre() + ",\n\n" +

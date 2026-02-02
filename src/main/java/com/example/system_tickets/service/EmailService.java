@@ -89,7 +89,7 @@ public class EmailService {
         sb.append("Hola ").append(ticket.getUsuario().getNombre()).append(",\n\n");
 
         if ("ESCALADO".equals(nombreNuevoEstado)) {
-            sb.append("Tu caso ha sido ESCALADO a un nivel superior para su revisión.\n");
+            sb.append("Tu caso ha sido ESCALADO. Esto significa que la solución requiere la intervención de un proveedor externo, gestión de garantías o insumos que exceden el soporte interno inmediato.\n");
         } else if ("CANCELADO".equals(nombreNuevoEstado)) {
             sb.append("Tu ticket ha sido CANCELADO.\n");
         } else if ("NO_RESUELTO".equals(nombreNuevoEstado)) {

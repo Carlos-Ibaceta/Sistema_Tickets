@@ -11,7 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Arrays; // <--- IMPORTANTE: Agregado para usar listas fáciles
+import java.util.Arrays;
 
 @Component
 public class NotificacionScheduler {
@@ -26,9 +26,13 @@ public class NotificacionScheduler {
         System.out.println("--- ⏰ EJECUTANDO SCHEDULER: Buscando tickets pendientes... ---");
 
         List<Ticket> todos = ticketRepository.findAll();
-        List<Usuario> soportes = usuarioRepository.findByRol_NombreRol("SOPORTE");
+
+        // --- CORRECCIÓN AQUÍ: Usamos el método que filtra solo activos ---
+        // Antes: findByRol_NombreRol("SOPORTE")
+        List<Usuario> soportes = usuarioRepository.findByRol_NombreRolAndActivoTrue("SOPORTE");
 
         if (soportes.isEmpty()) {
+            System.out.println("ℹ️ Info: No hay soportes activos para notificar.");
             return;
         }
 
@@ -39,9 +43,9 @@ public class NotificacionScheduler {
                 "RESUELTO",
                 "CERRADO",
                 "CANCELADO",
-                "ESCALADO",     // <--- AGREGADO: Ya no molestará
-                "NO RESUELTO",  // <--- AGREGADO: Ya no molestará
-                "NO_RESUELTO"   // <--- AGREGADO: Por si acaso en la BD está con guion bajo
+                "ESCALADO",
+                "NO RESUELTO",
+                "NO_RESUELTO"
         );
 
         for (Ticket t : todos) {
@@ -70,14 +74,14 @@ public class NotificacionScheduler {
                         msg.setText(sb.toString());
                         mailSender.send(msg);
                     } catch (Exception e) {
-                        System.out.println("❌ Error: " + e.getMessage());
+                        System.out.println("❌ Error enviando a " + s.getEmail() + ": " + e.getMessage());
                     }
                 }
             }
         }
 
         if (contadorRecordatorios > 0) {
-            System.out.println("--- 📨 Se enviaron " + contadorRecordatorios + " recordatorios ---");
+            System.out.println("--- 📨 Se enviaron " + contadorRecordatorios + " recordatorios a soportes activos ---");
         } else {
             System.out.println("--- ✅ Todo al día. No hay recordatorios pendientes. ---");
         }

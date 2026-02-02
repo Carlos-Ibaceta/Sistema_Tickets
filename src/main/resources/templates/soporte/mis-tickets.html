@@ -288,7 +288,7 @@
           <td>
             <span class="badge-status" th:classappend="${t.prioridad != null && t.prioridad.nivelPrioridad == 'ALTA'} ? 'bg-danger text-white' : (${t.prioridad != null && t.prioridad.nivelPrioridad == 'MEDIA'} ? 'bg-warning text-dark' : 'bg-info text-white')" th:text="${t.prioridad != null ? t.prioridad.nivelPrioridad : 'NORMAL'}">ALTA</span>
           </td>
-          <td>
+          <td class="text-nowrap">
             <span class="badge-status" th:classappend="${t.estadoTicket != null && t.estadoTicket.nombreEstado == 'EN_PROCESO'} ? 'bg-primary text-white' : (${t.estadoTicket != null && t.estadoTicket.nombreEstado == 'RESUELTO'} ? 'bg-success text-white' : 'bg-secondary text-white')" th:text="${t.estadoTicket != null ? #strings.replace(t.estadoTicket.nombreEstado, '_', ' ') : 'PENDIENTE'}">EN PROCESO</span>
           </td>
           <td class="text-end">
